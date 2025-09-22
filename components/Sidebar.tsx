@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -19,16 +20,40 @@ const menuItems = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
       </svg>
     ),
-  },
+  }
+];
+
+const brandSubmenu = [
   {
     name: 'Brands',
     href: '/dashboard/brands',
     icon: (
-      <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
       </svg>
     ),
   },
+  {
+    name: 'Categories',
+    href: '/dashboard/categories',
+    icon: (
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+      </svg>
+    ),
+  },
+  {
+    name: 'Products',
+    href: '/dashboard/products',
+    icon: (
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+      </svg>
+    ),
+  }
+];
+
+const otherMenuItems = [
   {
     name: 'Inventory',
     href: '/dashboard/inventory',
@@ -79,6 +104,15 @@ const menuItems = [
 
 export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
+  const [isBrandOpen, setIsBrandOpen] = useState(false);
+
+  const toggleBrandCard = () => {
+    setIsBrandOpen(!isBrandOpen);
+  };
+
+  const isBrandActive = pathname.startsWith('/dashboard/brands') || 
+                       pathname.startsWith('/dashboard/categories') || 
+                       pathname.startsWith('/dashboard/products');
 
   return (
     <>
@@ -138,7 +172,90 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse
 
           {/* Navigation */}
           <nav className={`flex-1 px-4 py-4 space-y-2 ${isCollapsed ? 'lg:px-2' : ''}`}>
+            {/* Dashboard Link */}
             {menuItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                    isActive
+                      ? 'bg-indigo-100 text-indigo-700 border-r-2 border-indigo-700'
+                      : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                  } ${isCollapsed ? 'lg:px-2 lg:justify-center' : ''}`}
+                  onClick={() => onClose()}
+                  title={isCollapsed ? item.name : undefined}
+                >
+                  <span className={`${isActive ? 'text-indigo-700' : 'text-gray-400'} ${isCollapsed ? '' : 'mr-3'}`}>
+                    {item.icon}
+                  </span>
+                  {!isCollapsed && item.name}
+                </Link>
+              );
+            })}
+
+            {/* Brand Management Card */}
+            <div className="space-y-1">
+              {/* Brand Header - Collapsible */}
+              <button
+                onClick={toggleBrandCard}
+                className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                  isBrandActive
+                    ? 'bg-indigo-100 text-indigo-700'
+                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                } ${isCollapsed ? 'lg:px-2 lg:justify-center' : ''}`}
+                title={isCollapsed ? 'Brand Management' : undefined}
+              >
+                <div className="flex items-center">
+                  <span className={`${isBrandActive ? 'text-indigo-700' : 'text-gray-400'} ${isCollapsed ? '' : 'mr-3'}`}>
+                    <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
+                  </span>
+                  {!isCollapsed && <span>Brand Management</span>}
+                </div>
+                {!isCollapsed && (
+                  <svg 
+                    className={`h-4 w-4 transition-transform duration-200 ${isBrandOpen ? 'rotate-180' : ''}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                )}
+              </button>
+
+              {/* Brand Submenu */}
+              {(isBrandOpen || isCollapsed) && !isCollapsed && (
+                <div className="ml-4 space-y-1 border-l-2 border-gray-200 pl-4">
+                  {brandSubmenu.map((item) => {
+                    const isActive = pathname === item.href;
+                    return (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+                          isActive
+                            ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-700'
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        }`}
+                        onClick={() => onClose()}
+                      >
+                        <span className={`${isActive ? 'text-indigo-700' : 'text-gray-400'} mr-2`}>
+                          {item.icon}
+                        </span>
+                        {item.name}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Other Menu Items */}
+            {otherMenuItems.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <Link
