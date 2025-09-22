@@ -117,7 +117,7 @@ export default function DashboardPage() {
             Welcome back, Admin!
           </h2>
           <p className="mt-1 text-sm text-gray-500">
-            Here's what's happening with your warehouse today.
+            Here&apos;s what&apos;s happening with your warehouse today.
           </p>
         </div>
 

@@ -1,7 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-
 interface ConfirmModalProps {
   isOpen: boolean;
   onClose: () => void;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface AlertNotificationProps {
   message: string;
@@ -18,21 +18,21 @@ export default function AlertNotification({
   const [isVisible, setIsVisible] = useState(true);
   const [isLeaving, setIsLeaving] = useState(false);
 
+  const handleClose = useCallback(() => {
+    setIsLeaving(true);
+    setTimeout(() => {
+      setIsVisible(false);
+      onClose?.();
+    }, 300); // Animation duration
+  }, [onClose]);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       handleClose();
     }, duration);
 
     return () => clearTimeout(timer);
-  }, [duration]);
-
-  const handleClose = () => {
-    setIsLeaving(true);
-    setTimeout(() => {
-      setIsVisible(false);
-      onClose?.();
-    }, 300); // Animation duration
-  };
+  }, [duration, handleClose]);
 
   if (!isVisible) return null;
 

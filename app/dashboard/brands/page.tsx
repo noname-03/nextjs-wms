@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { useAlert } from '@/components/AlertProvider';
@@ -51,13 +51,7 @@ export default function BrandsPage() {
     }
   }, [user, authLoading, router, mounted]);
 
-  useEffect(() => {
-    if (mounted && user) {
-      fetchBrands();
-    }
-  }, [mounted, user]);
-
-  const fetchBrands = async () => {
+  const fetchBrands = useCallback(async () => {
     setIsLoading(true);
     setError('');
     
@@ -77,7 +71,13 @@ export default function BrandsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [showError]);
+
+  useEffect(() => {
+    if (mounted && user) {
+      fetchBrands();
+    }
+  }, [mounted, user, fetchBrands]);
 
   const handleView = async (brand: Brand) => {
     try {
