@@ -114,12 +114,13 @@ export default function CategoryModal({ isOpen, onClose, mode, category, onSave,
 
   return (
     <div className="fixed inset-0 z-[9999] overflow-y-auto" style={{ zIndex: 99999 }}>
+      {/* Background overlay dengan warna agak hitam */}
+      <div
+        className="fixed inset-0 bg-gray-500/75 transition-opacity"
+        onClick={onClose}
+      />
+      
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        {/* Background overlay - transparent */}
-        <div
-          className="fixed inset-0"
-          onClick={onClose}
-        />
 
         {/* Modal panel */}
         <div 
@@ -145,7 +146,7 @@ export default function CategoryModal({ isOpen, onClose, mode, category, onSave,
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Brand</label>
                 <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
-                  {category.brand?.name || 'Unknown Brand'}
+                  {category.brandName || 'Unknown Brand'}
                 </p>
               </div>
               <div>
@@ -158,20 +159,6 @@ export default function CategoryModal({ isOpen, onClose, mode, category, onSave,
                   {category.description || 'No description provided'}
                 </p>
               </div>
-              {category.created_at && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Created At</label>
-                  <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
-                    {new Date(category.created_at).toLocaleDateString('id-ID', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </p>
-                </div>
-              )}
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">

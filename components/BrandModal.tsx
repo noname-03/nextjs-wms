@@ -88,12 +88,13 @@ export default function BrandModal({ isOpen, onClose, mode, brand, onSave, isLoa
 
   return (
     <div className="fixed inset-0 z-[9999] overflow-y-auto" style={{ zIndex: 99999 }}>
+      {/* Background overlay dengan warna agak hitam */}
+      <div
+        className="fixed inset-0 bg-gray-500/75 transition-opacity"
+        onClick={onClose}
+      />
+      
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        {/* Background overlay - transparent */}
-        <div
-          className="fixed inset-0"
-          onClick={onClose}
-        />
 
         {/* Modal panel */}
         <div 
