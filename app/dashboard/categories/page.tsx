@@ -26,8 +26,10 @@ export default function CategoriesPage() {
 
   // Categories state
   const [categories, setCategories] = useState<Category[]>([]);
+  const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -60,14 +62,17 @@ export default function CategoriesPage() {
       
       if (response.code === 200 && Array.isArray(response.data)) {
         setCategories(response.data);
+        setFilteredCategories(response.data);
       } else {
         showError(response.message || 'Failed to fetch categories');
         setCategories([]);
+        setFilteredCategories([]);
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
       showError('Failed to fetch categories');
       setCategories([]);
+      setFilteredCategories([]);
     } finally {
       setIsLoading(false);
     }
@@ -78,6 +83,19 @@ export default function CategoriesPage() {
       fetchCategories();
     }
   }, [mounted, user, fetchCategories]);
+
+  // Filter categories based on search term
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setFilteredCategories(categories);
+    } else {
+      const filtered = categories.filter(category =>
+        category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        category.brandName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredCategories(filtered);
+    }
+  }, [categories, searchTerm]);
 
   const handleView = async (category: Category) => {
     try {
@@ -210,7 +228,51 @@ export default function CategoriesPage() {
               Manage your product categories and organize your inventory.
             </p>
           </div>
-          <div className="mt-4 sm:mt-0">
+        </div>
+
+        {/* Search and Controls */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0 sm:space-x-4">
+            {/* Search Bar */}
+            <div className="flex-1 max-w-lg">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search categories and brands..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 text-gray-900 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    <svg className="h-4 w-4 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </div>
+            
+            {/* Search Results Info */}
+            <div className="text-sm text-gray-500">
+              {searchTerm ? (
+                <span>
+                  Showing {filteredCategories.length} of {categories.length} categories
+                </span>
+              ) : (
+                <span>{categories.length} categories total</span>
+              )}
+            </div>
+            
+            {/* Add Button */}
             <button
               onClick={handleCreate}
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
@@ -251,24 +313,47 @@ export default function CategoriesPage() {
                 Try Again
               </button>
             </div>
-          ) : categories.length === 0 ? (
+          ) : filteredCategories.length === 0 ? (
             <div className="p-8 text-center">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-4">
-                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
+                {searchTerm ? (
+                  <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                ) : (
+                  <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                )}
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No Categories Found</h3>
-              <p className="text-gray-500 mb-4">Get started by creating your first category.</p>
-              <button
-                onClick={handleCreate}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-              >
-                <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                Add First Category
-              </button>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {searchTerm ? 'No categories found' : 'No Categories Found'}
+              </h3>
+              <p className="text-gray-500 mb-4">
+                {searchTerm ? (
+                  <>No categories match your search for "{searchTerm}"</>
+                ) : (
+                  'Get started by creating your first category.'
+                )}
+              </p>
+              {searchTerm ? (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  Clear search
+                </button>
+              ) : (
+                <button
+                  onClick={handleCreate}
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                >
+                  <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Add First Category
+                </button>
+              )}
             </div>
           ) : (
             <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
@@ -302,7 +387,7 @@ export default function CategoriesPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {categories.map((category, index) => (
+                  {filteredCategories.map((category, index) => (
                     <tr key={category.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {index + 1}

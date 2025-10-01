@@ -26,8 +26,10 @@ export default function BrandsPage() {
 
   // Brands state
   const [brands, setBrands] = useState<Brand[]>([]);
+  const [filteredBrands, setFilteredBrands] = useState<Brand[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -60,9 +62,11 @@ export default function BrandsPage() {
       
       if (response.code === 200 && Array.isArray(response.data)) {
         setBrands(response.data);
+        setFilteredBrands(response.data);
       } else {
         showError(response.message || 'Failed to fetch brands');
         setBrands([]);
+        setFilteredBrands([]);
       }
     } catch (error) {
       console.error('Error fetching brands:', error);
@@ -78,6 +82,18 @@ export default function BrandsPage() {
       fetchBrands();
     }
   }, [mounted, user, fetchBrands]);
+
+  // Filter brands based on search term
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setFilteredBrands(brands);
+    } else {
+      const filtered = brands.filter(brand =>
+        brand.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredBrands(filtered);
+    }
+  }, [brands, searchTerm]);
 
   const handleView = async (brand: Brand) => {
     try {
@@ -210,7 +226,51 @@ export default function BrandsPage() {
               Manage your product brands and their information.
             </p>
           </div>
-          <div className="mt-4 sm:mt-0">
+        </div>
+
+        {/* Search and Controls */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0 sm:space-x-4">
+            {/* Search Bar */}
+            <div className="flex-1 max-w-lg">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search brands..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 text-gray-900 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    <svg className="h-4 w-4 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </div>
+            
+            {/* Search Results Info */}
+            <div className="text-sm text-gray-500">
+              {searchTerm ? (
+                <span>
+                  Showing {filteredBrands.length} of {brands.length} brands
+                </span>
+              ) : (
+                <span>{brands.length} brands total</span>
+              )}
+            </div>
+            
+            {/* Add Button */}
             <button
               onClick={handleCreate}
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
@@ -251,24 +311,47 @@ export default function BrandsPage() {
                 Try Again
               </button>
             </div>
-          ) : brands.length === 0 ? (
+          ) : filteredBrands.length === 0 ? (
             <div className="p-8 text-center">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-4">
-                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                </svg>
+                {searchTerm ? (
+                  <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                ) : (
+                  <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                  </svg>
+                )}
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No Brands Found</h3>
-              <p className="text-gray-500 mb-4">Get started by creating your first brand.</p>
-              <button
-                onClick={handleCreate}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-              >
-                <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                Add First Brand
-              </button>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {searchTerm ? 'No brands found' : 'No Brands Found'}
+              </h3>
+              <p className="text-gray-500 mb-4">
+                {searchTerm ? (
+                  <>No brands match your search for "{searchTerm}"</>
+                ) : (
+                  'Get started by creating your first brand.'
+                )}
+              </p>
+              {searchTerm ? (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  Clear search
+                </button>
+              ) : (
+                <button
+                  onClick={handleCreate}
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                >
+                  <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Add First Brand
+                </button>
+              )}
             </div>
           ) : (
             <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
@@ -299,7 +382,7 @@ export default function BrandsPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {brands.map((brand, index) => (
+                  {filteredBrands.map((brand, index) => (
                     <tr key={brand.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {index + 1}
