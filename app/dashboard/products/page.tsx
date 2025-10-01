@@ -7,6 +7,9 @@ import { useAlert } from '@/components/AlertProvider';
 import DashboardLayout from '@/components/DashboardLayout';
 import ProductModal from '@/components/ProductModal';
 import ConfirmModal from '@/components/ConfirmModal';
+import DeletedProductsModal from '@/components/DeletedProductsModal';
+import ViewDeletedButton from '@/components/ViewDeletedButton';
+import { useDeletedItems } from '@/hooks/useDeletedItems';
 import { 
   getProducts, 
   getProduct, 
@@ -41,6 +44,9 @@ export default function ProductsPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | undefined>();
   const [deleteLoading, setDeleteLoading] = useState(false);
+
+  // Deleted items state
+  const { showDeleted, openDeletedView, closeDeletedView } = useDeletedItems();
 
   useEffect(() => {
     setMounted(true);
@@ -272,16 +278,23 @@ export default function ProductsPage() {
               )}
             </div>
             
-            {/* Add Button */}
-            <button
-              onClick={handleCreate}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
-            >
-              <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              Add New Product
-            </button>
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <ViewDeletedButton
+                onClick={openDeletedView}
+                itemName="Products"
+              />
+              <button
+                onClick={handleCreate}
+                className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 hover:scale-105 active:scale-95"
+              >
+                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span className="hidden sm:inline">Add New Product</span>
+                <span className="sm:hidden">Add New</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -473,6 +486,16 @@ export default function ProductsPage() {
         cancelText="Cancel"
         type="danger"
         isLoading={deleteLoading}
+      />
+
+      {/* Deleted Products Modal */}
+      <DeletedProductsModal
+        isOpen={showDeleted}
+        onClose={closeDeletedView}
+        onRestore={() => {
+          // Refresh products list after restore
+          fetchProducts();
+        }}
       />
     </DashboardLayout>
   );

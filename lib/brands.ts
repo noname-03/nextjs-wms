@@ -8,6 +8,7 @@ export interface Brand {
   description?: string;
   created_at?: string;
   updated_at?: string;
+  deleted_at?: string;
 }
 
 export interface BrandResponse {
@@ -155,6 +156,56 @@ export async function deleteBrand(id: number): Promise<BrandResponse> {
     return data;
   } catch (error) {
     console.error('❌ Delete brand error:', error);
+    return {
+      code: 500,
+      message: 'Network error or server unavailable',
+    };
+  }
+}
+
+// Get deleted brands
+export async function getDeletedBrands(): Promise<BrandResponse> {
+  try {
+    console.log('🗑️ Fetching deleted brands...');
+    
+    const response = await fetch(`${API_BASE_URL}/brands/deleted`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    const data = await response.json();
+    
+    console.log('📥 Get deleted brands response status:', response.status);
+    console.log('📥 Get deleted brands response data:', data);
+
+    return data;
+  } catch (error) {
+    console.error('❌ Get deleted brands error:', error);
+    return {
+      code: 500,
+      message: 'Network error or server unavailable',
+    };
+  }
+}
+
+// Restore a brand
+export async function restoreBrand(id: number): Promise<BrandResponse> {
+  try {
+    console.log('♻️ Restoring brand with ID:', id);
+    
+    const response = await fetch(`${API_BASE_URL}/brands/${id}/restore`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+    });
+
+    const data = await response.json();
+    
+    console.log('📥 Restore brand response status:', response.status);
+    console.log('📥 Restore brand response data:', data);
+
+    return data;
+  } catch (error) {
+    console.error('❌ Restore brand error:', error);
     return {
       code: 500,
       message: 'Network error or server unavailable',

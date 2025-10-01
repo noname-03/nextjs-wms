@@ -8,6 +8,7 @@ export interface Product {
   categoryName: string;
   name: string;
   description?: string;
+  deleted_at?: string; // Add for deleted products
 }
 
 export interface CreateProductData {
@@ -136,6 +137,48 @@ export const deleteProduct = async (id: number): Promise<ProductResponse> => {
     return data;
   } catch (error) {
     console.error('Error deleting product:', error);
+    throw error;
+  }
+};
+
+export const getDeletedProducts = async (): Promise<ProductResponse> => {
+  try {
+    console.log('Fetching deleted products...');
+    const response = await fetch(`${API_BASE_URL}/products/deleted`, {
+      method: 'GET',
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('Deleted products response:', data);
+    return data;
+  } catch (error) {
+    console.error('Error fetching deleted products:', error);
+    throw error;
+  }
+};
+
+export const restoreProduct = async (id: number): Promise<ProductResponse> => {
+  try {
+    console.log('Restoring product with ID:', id);
+    const response = await fetch(`${API_BASE_URL}/products/${id}/restore`, {
+      method: 'PUT',
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('Restore product response:', data);
+    return data;
+  } catch (error) {
+    console.error('Error restoring product:', error);
     throw error;
   }
 };

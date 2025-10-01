@@ -6,6 +6,7 @@ export interface Category {
   brandName: string;
   name: string;
   description?: string;
+  deleted_at?: string; // Add for deleted categories
 }
 
 export interface CreateCategoryData {
@@ -134,6 +135,48 @@ export const deleteCategory = async (id: number): Promise<CategoryResponse> => {
     return data;
   } catch (error) {
     console.error('Error deleting category:', error);
+    throw error;
+  }
+};
+
+export const getDeletedCategories = async (): Promise<CategoryResponse> => {
+  try {
+    console.log('Fetching deleted categories...');
+    const response = await fetch(`${API_BASE_URL}/categories/deleted`, {
+      method: 'GET',
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('Deleted categories response:', data);
+    return data;
+  } catch (error) {
+    console.error('Error fetching deleted categories:', error);
+    throw error;
+  }
+};
+
+export const restoreCategory = async (id: number): Promise<CategoryResponse> => {
+  try {
+    console.log('Restoring category with ID:', id);
+    const response = await fetch(`${API_BASE_URL}/categories/${id}/restore`, {
+      method: 'PUT',
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('Restore category response:', data);
+    return data;
+  } catch (error) {
+    console.error('Error restoring category:', error);
     throw error;
   }
 };
