@@ -94,7 +94,7 @@ export default function SearchSelect({
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
@@ -104,27 +104,27 @@ export default function SearchSelect({
           onClick={handleInputClick}
           className={`w-full px-3 py-2 border rounded-md shadow-sm cursor-pointer flex items-center justify-between ${
             error 
-              ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-              : 'border-gray-300 focus:border-indigo-500'
+              ? 'border-red-300 dark:border-red-600 focus:border-red-500 focus:ring-red-500' 
+              : 'border-gray-300 dark:border-gray-600 focus:border-indigo-500'
           } ${
             disabled || loading 
-              ? 'bg-gray-100 cursor-not-allowed' 
-              : 'bg-white hover:border-gray-400'
+              ? 'bg-gray-100 dark:bg-gray-700 cursor-not-allowed' 
+              : 'bg-white dark:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500'
           }`}
         >
-          <span className={`text-sm ${selectedOption ? 'text-gray-900' : 'text-gray-500'}`}>
+          <span className={`text-sm ${selectedOption ? 'text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}`}>
             {loading ? 'Loading...' : selectedOption ? (selectedOption.displayName || selectedOption.name) : placeholder}
           </span>
           
           <div className="flex items-center space-x-1">
             {loading && (
-              <svg className="animate-spin h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <svg className="animate-spin h-4 w-4 text-gray-400 dark:text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
             )}
             <svg
-              className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+              className={`h-4 w-4 text-gray-400 dark:text-gray-500 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -136,9 +136,9 @@ export default function SearchSelect({
 
         {/* Dropdown */}
         {isOpen && !disabled && !loading && (
-          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+          <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-y-auto">
             {/* Search input */}
-            <div className="p-2 border-b border-gray-200">
+            <div className="p-2 border-b border-gray-200 dark:border-gray-600">
               <input
                 ref={inputRef}
                 type="text"
@@ -146,7 +146,7 @@ export default function SearchSelect({
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Type to search..."
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700"
               />
             </div>
 
@@ -157,15 +157,15 @@ export default function SearchSelect({
                   <div
                     key={option.id}
                     onClick={() => handleOptionSelect(option)}
-                    className={`px-3 py-2 text-sm cursor-pointer hover:bg-indigo-50 ${
-                      value === option.id ? 'bg-indigo-100 text-indigo-900' : 'text-gray-900'
+                    className={`px-3 py-2 text-sm cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-900/50 ${
+                      value === option.id ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-900 dark:text-indigo-300' : 'text-gray-900 dark:text-gray-100'
                     }`}
                   >
                     {option.displayName || option.name}
                   </div>
                 ))
               ) : (
-                <div className="px-3 py-2 text-sm text-gray-500">
+                <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
                   {searchTerm ? `No results found for "${searchTerm}"` : 'No options available'}
                 </div>
               )}

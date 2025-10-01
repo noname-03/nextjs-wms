@@ -125,15 +125,15 @@ export default function ProductModal({ isOpen, onClose, mode, product, onSave, i
 
         {/* Modal panel */}
         <div 
-          className="relative inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl border border-gray-200"
+          className="relative inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-gray-800 shadow-xl rounded-2xl border border-gray-200 dark:border-gray-700"
           style={{ zIndex: 99999 }}
         >
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-medium text-gray-900">{getTitle()}</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">{getTitle()}</h3>
             <button
               onClick={onClose}
-              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors duration-200"
+              className="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors duration-200"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -145,24 +145,24 @@ export default function ProductModal({ isOpen, onClose, mode, product, onSave, i
           {mode === 'view' && product ? (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+                <p className="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded-md">
                   {product.categoryName || 'Unknown Category'}
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Brand</label>
-                <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Brand</label>
+                <p className="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded-md">
                   {product.brandName || 'Unknown Brand'}
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
-                <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">{product.name}</p>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product Name</label>
+                <p className="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded-md">{product.name}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <p className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md min-h-[80px]">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+                <p className="text-sm text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded-md min-h-[80px]">
                   {product.description || 'No description provided'}
                 </p>
               </div>
@@ -195,7 +195,7 @@ export default function ProductModal({ isOpen, onClose, mode, product, onSave, i
 
               {/* Name field */}
               <div>
-                <label htmlFor="product-name" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="product-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Product Name *
                 </label>
                 <input
@@ -205,10 +205,10 @@ export default function ProductModal({ isOpen, onClose, mode, product, onSave, i
                   autoComplete="off"
                   value={formData.name}
                   onChange={handleChange}
-                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 bg-white ${
+                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 ${
                     errors.name 
-                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-                      : 'border-gray-300 focus:border-indigo-500'
+                      ? 'border-red-300 dark:border-red-600 focus:border-red-500 focus:ring-red-500' 
+                      : 'border-gray-300 dark:border-gray-600 focus:border-indigo-500'
                   }`}
                   placeholder="Enter product name"
                   disabled={isLoading}
@@ -221,7 +221,7 @@ export default function ProductModal({ isOpen, onClose, mode, product, onSave, i
 
               {/* Description field */}
               <div>
-                <label htmlFor="product-description" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="product-description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Description
                 </label>
                 <textarea
@@ -231,10 +231,10 @@ export default function ProductModal({ isOpen, onClose, mode, product, onSave, i
                   value={formData.description}
                   onChange={handleChange}
                   rows={3}
-                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 bg-white ${
+                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 ${
                     errors.description 
-                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-                      : 'border-gray-300 focus:border-indigo-500'
+                      ? 'border-red-300 dark:border-red-600 focus:border-red-500 focus:ring-red-500' 
+                      : 'border-gray-300 dark:border-gray-600 focus:border-indigo-500'
                   }`}
                   placeholder="Enter product description (optional)"
                   disabled={isLoading}
@@ -249,7 +249,7 @@ export default function ProductModal({ isOpen, onClose, mode, product, onSave, i
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
                   disabled={isLoading}
                 >
                   Cancel
