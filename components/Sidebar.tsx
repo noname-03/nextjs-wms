@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -113,6 +113,13 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse
   const isBrandActive = pathname.startsWith('/dashboard/brands') || 
                        pathname.startsWith('/dashboard/categories') || 
                        pathname.startsWith('/dashboard/products');
+
+  // Auto-open Brand Management section when on brand-related pages
+  useEffect(() => {
+    if (isBrandActive) {
+      setIsBrandOpen(true);
+    }
+  }, [isBrandActive]);
 
   return (
     <>
