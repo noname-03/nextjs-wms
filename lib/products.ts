@@ -2,20 +2,12 @@ const API_BASE_URL = 'https://apigo.fahrurrozi.web.id/api/v1';
 
 export interface Product {
   id: number;
+  brandId: number;
   categoryId: number;
+  brandName: string;
+  categoryName: string;
   name: string;
-  description: string;
-  created_at?: string;
-  updated_at?: string;
-  category?: {
-    id: number;
-    name: string;
-    brandId: number;
-    brand?: {
-      id: number;
-      name: string;
-    };
-  };
+  description?: string;
 }
 
 export interface CreateProductData {
