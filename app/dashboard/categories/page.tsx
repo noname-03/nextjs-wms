@@ -411,7 +411,13 @@ export default function CategoriesPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{category.name}</div>
+                        <button
+                          onClick={() => router.push(`/dashboard/categories/${category.id}`)}
+                          className="text-sm font-medium text-indigo-600 hover:text-indigo-900 hover:underline transition-colors duration-200"
+                          title="View category products"
+                        >
+                          {category.name}
+                        </button>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">

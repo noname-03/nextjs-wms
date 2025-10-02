@@ -182,3 +182,24 @@ export const restoreProduct = async (id: number): Promise<ProductResponse> => {
     throw error;
   }
 };
+
+export const getProductsByCategoryId = async (categoryId: number): Promise<ProductResponse> => {
+  try {
+    console.log('Fetching products for category ID:', categoryId);
+    const response = await fetch(`${API_BASE_URL}/products/categories/${categoryId}`, {
+      method: 'GET',
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('Products by category response:', data);
+    return data;
+  } catch (error) {
+    console.error('Error fetching products by category:', error);
+    throw error;
+  }
+};

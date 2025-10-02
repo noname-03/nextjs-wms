@@ -5,38 +5,38 @@ import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { useAlert } from '@/components/AlertProvider';
 import DashboardLayout from '@/components/DashboardLayout';
-import CategoryModal from '@/components/CategoryModal';
+import ProductModal from '@/components/ProductModal';
 import ConfirmModal from '@/components/ConfirmModal';
-import DeletedCategoriesModal from '@/components/DeletedCategoriesModal';
+import DeletedProductsModal from '@/components/DeletedProductsModal';
 import ViewDeletedButton from '@/components/ViewDeletedButton';
 import { useDeletedItems } from '@/hooks/useDeletedItems';
 import { 
-  getCategoriesByBrandId,
-  getCategory, 
-  createCategory, 
-  updateCategory, 
-  deleteCategory, 
-  Category, 
-  CreateCategoryData, 
-  UpdateCategoryData 
-} from '@/lib/categories';
-import { getBrand, Brand } from '@/lib/brands';
+  getProductsByCategoryId,
+  getProduct, 
+  createProduct, 
+  updateProduct, 
+  deleteProduct, 
+  Product, 
+  CreateProductData, 
+  UpdateProductData 
+} from '@/lib/products';
+import { getCategory, Category } from '@/lib/categories';
 
-export default function BrandViewPage() {
+export default function CategoryViewPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { showSuccess, showError } = useAlert();
   const router = useRouter();
   const params = useParams();
-  const brandId = Number(params.id);
+  const categoryId = Number(params.id);
   const [mounted, setMounted] = useState(false);
 
-  // Brand state
-  const [brand, setBrand] = useState<Brand | null>(null);
-  const [brandLoading, setBrandLoading] = useState(true);
+  // Category state
+  const [category, setCategory] = useState<Category | null>(null);
+  const [categoryLoading, setCategoryLoading] = useState(true);
 
-  // Categories state
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
+  // Products state
+  const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -44,12 +44,12 @@ export default function BrandViewPage() {
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'view' | 'create' | 'edit'>('view');
-  const [selectedCategory, setSelectedCategory] = useState<Category | undefined>();
+  const [selectedProduct, setSelectedProduct] = useState<Product | undefined>();
   const [modalLoading, setModalLoading] = useState(false);
 
   // Confirm modal state
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [categoryToDelete, setCategoryToDelete] = useState<Category | undefined>();
+  const [productToDelete, setProductToDelete] = useState<Product | undefined>();
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Deleted items state
@@ -61,187 +61,188 @@ export default function BrandViewPage() {
 
   useEffect(() => {
     if (mounted && !authLoading && !user) {
-      console.log('🚫 Brand view page - No user, redirecting to login');
+      console.log('🚫 Category view page - No user, redirecting to login');
       router.push('/login');
     }
   }, [user, authLoading, router, mounted]);
 
-  // Validate brandId
+  // Validate categoryId
   useEffect(() => {
-    if (mounted && isNaN(brandId)) {
-      showError('Invalid brand ID');
-      router.push('/dashboard/brands');
+    if (mounted && isNaN(categoryId)) {
+      showError('Invalid category ID');
+      router.push('/dashboard/categories');
     }
-  }, [mounted, brandId, router, showError]);
+  }, [mounted, categoryId, router, showError]);
 
-  const fetchBrand = useCallback(async () => {
-    if (isNaN(brandId)) return;
+  const fetchCategory = useCallback(async () => {
+    if (isNaN(categoryId)) return;
     
-    setBrandLoading(true);
+    setCategoryLoading(true);
     try {
-      const response = await getBrand(brandId);
+      const response = await getCategory(categoryId);
       if (response.code === 200 && response.data && !Array.isArray(response.data)) {
-        setBrand(response.data);
+        setCategory(response.data);
       } else {
-        showError('Brand not found');
-        router.push('/dashboard/brands');
+        showError('Category not found');
+        router.push('/dashboard/categories');
       }
     } catch (error) {
-      console.error('Error fetching brand:', error);
-      showError('Failed to fetch brand');
-      router.push('/dashboard/brands');
+      console.error('Error fetching category:', error);
+      showError('Failed to fetch category');
+      router.push('/dashboard/categories');
     } finally {
-      setBrandLoading(false);
+      setCategoryLoading(false);
     }
-  }, [brandId, showError, router]);
+  }, [categoryId, showError, router]);
 
-  const fetchCategories = useCallback(async () => {
-    if (isNaN(brandId)) return;
+  const fetchProducts = useCallback(async () => {
+    if (isNaN(categoryId)) return;
     
     setIsLoading(true);
     setError('');
     
     try {
-      const response = await getCategoriesByBrandId(brandId);
+      const response = await getProductsByCategoryId(categoryId);
       
       if (response.code === 200 && Array.isArray(response.data)) {
-        setCategories(response.data);
-        setFilteredCategories(response.data);
+        setProducts(response.data);
+        setFilteredProducts(response.data);
       } else {
-        showError(response.message || 'Failed to fetch categories');
-        setCategories([]);
-        setFilteredCategories([]);
+        showError(response.message || 'Failed to fetch products');
+        setProducts([]);
+        setFilteredProducts([]);
       }
     } catch (error) {
-      console.error('Error fetching categories:', error);
-      showError('Failed to fetch categories');
-      setCategories([]);
+      console.error('Error fetching products:', error);
+      showError('Failed to fetch products');
+      setProducts([]);
     } finally {
       setIsLoading(false);
     }
-  }, [brandId, showError]);
+  }, [categoryId, showError]);
 
   useEffect(() => {
-    if (mounted && user && !isNaN(brandId)) {
-      fetchBrand();
-      fetchCategories();
+    if (mounted && user && !isNaN(categoryId)) {
+      fetchCategory();
+      fetchProducts();
     }
-  }, [mounted, user, brandId, fetchBrand, fetchCategories]);
+  }, [mounted, user, categoryId, fetchCategory, fetchProducts]);
 
-  // Filter categories based on search term
+  // Filter products based on search term
   useEffect(() => {
     if (!searchTerm.trim()) {
-      setFilteredCategories(categories);
+      setFilteredProducts(products);
     } else {
-      const filtered = categories.filter(category =>
-        category.name.toLowerCase().includes(searchTerm.toLowerCase())
+      const filtered = products.filter(product =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.brandName.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      setFilteredCategories(filtered);
+      setFilteredProducts(filtered);
     }
-  }, [categories, searchTerm]);
+  }, [products, searchTerm]);
 
-  const handleView = async (category: Category) => {
+  const handleView = async (product: Product) => {
     try {
-      const response = await getCategory(category.id);
+      const response = await getProduct(product.id);
       if (response.code === 200 && response.data && !Array.isArray(response.data)) {
-        setSelectedCategory(response.data);
+        setSelectedProduct(response.data);
         setModalMode('view');
         setModalOpen(true);
       } else {
-        showError('Failed to fetch category details');
+        showError('Failed to fetch product details');
       }
     } catch (error) {
-      console.error('Error fetching category:', error);
-      showError('Failed to fetch category details');
+      console.error('Error fetching product:', error);
+      showError('Failed to fetch product details');
     }
   };
 
   const handleCreate = () => {
-    setSelectedCategory(undefined);
+    setSelectedProduct(undefined);
     setModalMode('create');
     setModalOpen(true);
   };
 
-  const handleEdit = async (category: Category) => {
+  const handleEdit = async (product: Product) => {
     try {
-      const response = await getCategory(category.id);
+      const response = await getProduct(product.id);
       if (response.code === 200 && response.data && !Array.isArray(response.data)) {
-        setSelectedCategory(response.data);
+        setSelectedProduct(response.data);
         setModalMode('edit');
         setModalOpen(true);
       } else {
-        showError('Failed to fetch category details');
+        showError('Failed to fetch product details');
       }
     } catch (error) {
-      console.error('Error fetching category:', error);
-      showError('Failed to fetch category details');
+      console.error('Error fetching product:', error);
+      showError('Failed to fetch product details');
     }
   };
 
-  const handleSave = async (data: CreateCategoryData | UpdateCategoryData) => {
+  const handleSave = async (data: CreateProductData | UpdateProductData) => {
     setModalLoading(true);
     
     try {
       let response;
       
       if (modalMode === 'create') {
-        // Set brandId to current brand for new categories
-        const createData = { ...data as CreateCategoryData, brandId };
-        response = await createCategory(createData);
-      } else if (modalMode === 'edit' && selectedCategory) {
-        response = await updateCategory(selectedCategory.id, data as UpdateCategoryData);
+        // Set categoryId to current category for new products
+        const createData = { ...data as CreateProductData, categoryId };
+        response = await createProduct(createData);
+      } else if (modalMode === 'edit' && selectedProduct) {
+        response = await updateProduct(selectedProduct.id, data as UpdateProductData);
       }
       
       if (response && (response.code === 200 || response.code === 201)) {
         setModalOpen(false);
-        await fetchCategories(); // Refresh the table
-        showSuccess(`Category ${modalMode === 'create' ? 'created' : 'updated'} successfully!`);
+        await fetchProducts(); // Refresh the table
+        showSuccess(`Product ${modalMode === 'create' ? 'created' : 'updated'} successfully!`);
       } else {
-        showError(response?.message || `Failed to ${modalMode} category`);
+        showError(response?.message || `Failed to ${modalMode} product`);
       }
     } catch (error) {
-      console.error(`Error ${modalMode} category:`, error);
-      showError(`Failed to ${modalMode} category`);
+      console.error(`Error ${modalMode} product:`, error);
+      showError(`Failed to ${modalMode} product`);
     } finally {
       setModalLoading(false);
     }
   };
 
-  const handleDeleteClick = (category: Category) => {
-    setCategoryToDelete(category);
+  const handleDeleteClick = (product: Product) => {
+    setProductToDelete(product);
     setConfirmOpen(true);
   };
 
   const handleConfirmDelete = async () => {
-    if (!categoryToDelete) return;
+    if (!productToDelete) return;
     
     setDeleteLoading(true);
     try {
-      const response = await deleteCategory(categoryToDelete.id);
-      console.log('Delete category response:', categoryToDelete.id);
+      const response = await deleteProduct(productToDelete.id);
+      console.log('Delete product response:', productToDelete.id);
       if (response.code === 200) {
         setConfirmOpen(false);
-        setCategoryToDelete(undefined);
-        await fetchCategories(); // Refresh the table
-        showSuccess('Category deleted successfully!');
+        setProductToDelete(undefined);
+        await fetchProducts(); // Refresh the table
+        showSuccess('Product deleted successfully!');
       } else {
-        showError(response.message || 'Failed to delete category');
+        showError(response.message || 'Failed to delete product');
       }
     } catch (error) {
-      console.error('Error deleting category:', error);
-      showError('Failed to delete category');
+      console.error('Error deleting product:', error);
+      showError('Failed to delete product');
     } finally {
       setDeleteLoading(false);
     }
   };
 
-  if (!mounted || authLoading || brandLoading) {
+  if (!mounted || authLoading || categoryLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="mx-auto h-16 w-16 bg-indigo-600 rounded-full flex items-center justify-center mb-4 animate-pulse">
             <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Loading...</h2>
@@ -256,21 +257,21 @@ export default function BrandViewPage() {
     );
   }
 
-  if (!user || !brand) {
+  if (!user || !category) {
     return null; // Will redirect in useEffect
   }
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Brand Header */}
+        {/* Category Header */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => router.push('/dashboard/brands')}
+                onClick={() => router.push('/dashboard/categories')}
                 className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors duration-200"
-                title="Back to Brands"
+                title="Back to Categories"
               >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -282,9 +283,9 @@ export default function BrandViewPage() {
                 </svg>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">{brand.name}</h1>
+                <h1 className="text-2xl font-bold text-gray-900">{category.name}</h1>
                 <p className="text-sm text-gray-500">
-                  {brand.description || 'Brand categories and management'}
+                  Brand: {category.brandName} • {category.description || 'Category products and management'}
                 </p>
               </div>
             </div>
@@ -295,10 +296,10 @@ export default function BrandViewPage() {
         <div className="sm:flex sm:items-center sm:justify-between">
           <div>
             <h2 className="text-xl font-bold leading-7 text-gray-900 sm:text-2xl sm:truncate">
-              Categories for {brand.name}
+              Products for {category.name}
             </h2>
             <p className="mt-1 text-sm text-gray-500">
-              Manage categories for this brand and their information.
+              Manage products for this category and their information.
             </p>
           </div>
         </div>
@@ -316,7 +317,7 @@ export default function BrandViewPage() {
                 </div>
                 <input
                   type="text"
-                  placeholder="Search categories..."
+                  placeholder="Search products..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 text-gray-900 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -338,10 +339,10 @@ export default function BrandViewPage() {
             <div className="text-sm text-gray-500">
               {searchTerm ? (
                 <span>
-                  Showing {filteredCategories.length} of {categories.length} categories
+                  Showing {filteredProducts.length} of {products.length} products
                 </span>
               ) : (
-                <span>{categories.length} categories total</span>
+                <span>{products.length} products total</span>
               )}
             </div>
             
@@ -349,7 +350,7 @@ export default function BrandViewPage() {
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <ViewDeletedButton
                 onClick={openDeletedView}
-                itemName="Categories"
+                itemName="Products"
               />
               <button
                 onClick={handleCreate}
@@ -358,7 +359,7 @@ export default function BrandViewPage() {
                 <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
-                <span className="hidden sm:inline">Add New Category</span>
+                <span className="hidden sm:inline">Add New Product</span>
                 <span className="sm:hidden">Add New</span>
               </button>
             </div>
@@ -374,7 +375,7 @@ export default function BrandViewPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Loading Categories</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Loading Products</h3>
               <p className="text-gray-500">Please wait while we fetch the data...</p>
             </div>
           ) : error ? (
@@ -384,16 +385,16 @@ export default function BrandViewPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Categories</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Products</h3>
               <p className="text-gray-500 mb-4">{error}</p>
               <button
-                onClick={fetchCategories}
+                onClick={fetchProducts}
                 className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
               >
                 Try Again
               </button>
             </div>
-          ) : filteredCategories.length === 0 ? (
+          ) : filteredProducts.length === 0 ? (
             <div className="p-8 text-center">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-4">
                 {searchTerm ? (
@@ -402,18 +403,18 @@ export default function BrandViewPage() {
                   </svg>
                 ) : (
                   <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                   </svg>
                 )}
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {searchTerm ? 'No categories found' : 'No Categories Found'}
+                {searchTerm ? 'No products found' : 'No Products Found'}
               </h3>
               <p className="text-gray-500 mb-4">
                 {searchTerm ? (
-                  <>No categories match your search for "{searchTerm}"</>
+                  <>No products match your search for "{searchTerm}"</>
                 ) : (
-                  `Get started by creating your first category for ${brand.name}.`
+                  `Get started by creating your first product for ${category.name}.`
                 )}
               </p>
               {searchTerm ? (
@@ -431,7 +432,7 @@ export default function BrandViewPage() {
                   <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                   </svg>
-                  Add First Category
+                  Add First Product
                 </button>
               )}
             </div>
@@ -444,7 +445,10 @@ export default function BrandViewPage() {
                       No
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
-                      Category Name
+                      Product Name
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+                      Brand
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
                       Description
@@ -453,7 +457,7 @@ export default function BrandViewPage() {
                       <div className="flex items-center justify-end space-x-2">
                         <span>Actions</span>
                         <button
-                          onClick={fetchCategories}
+                          onClick={fetchProducts}
                           disabled={isLoading}
                           className="p-1 text-gray-400 hover:text-indigo-600 disabled:opacity-50 transition-colors duration-200"
                           title="Refresh data"
@@ -467,30 +471,26 @@ export default function BrandViewPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredCategories.map((category, index) => (
-                    <tr key={category.id} className="hover:bg-gray-50">
+                  {filteredProducts.map((product, index) => (
+                    <tr key={product.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {index + 1}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          <button
-                            onClick={() => router.push(`/dashboard/categories/${category.id}`)}
-                            className="text-indigo-600 hover:text-indigo-900 hover:underline focus:outline-none focus:underline"
-                          >
-                            {category.name}
-                          </button>
-                        </div>
+                        <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{product.brandName}</div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-900 max-w-xs truncate">
-                          {category.description || '-'}
+                          {product.description || '-'}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
                           <button
-                            onClick={() => handleView(category)}
+                            onClick={() => handleView(product)}
                             className="text-indigo-600 hover:text-indigo-900 p-1 rounded-md hover:bg-indigo-50"
                             title="View"
                           >
@@ -500,7 +500,7 @@ export default function BrandViewPage() {
                             </svg>
                           </button>
                           <button
-                            onClick={() => handleEdit(category)}
+                            onClick={() => handleEdit(product)}
                             className="text-yellow-600 hover:text-yellow-900 p-1 rounded-md hover:bg-yellow-50"
                             title="Edit"
                           >
@@ -509,7 +509,7 @@ export default function BrandViewPage() {
                             </svg>
                           </button>
                           <button
-                            onClick={() => handleDeleteClick(category)}
+                            onClick={() => handleDeleteClick(product)}
                             className="text-red-600 hover:text-red-900 p-1 rounded-md hover:bg-red-50"
                             title="Delete"
                           >
@@ -528,15 +528,15 @@ export default function BrandViewPage() {
         </div>
       </div>
 
-      {/* Category Modal */}
-      <CategoryModal
+      {/* Product Modal */}
+      <ProductModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         mode={modalMode}
-        category={selectedCategory}
+        product={selectedProduct}
         onSave={handleSave}
         isLoading={modalLoading}
-        defaultBrandId={brandId} // Pass brandId as default
+        defaultCategoryId={categoryId} // Pass categoryId as default
       />
 
       {/* Confirm Delete Modal */}
@@ -544,24 +544,24 @@ export default function BrandViewPage() {
         isOpen={confirmOpen}
         onClose={() => {
           setConfirmOpen(false);
-          setCategoryToDelete(undefined);
+          setProductToDelete(undefined);
         }}
         onConfirm={handleConfirmDelete}
-        title="Delete Category"
-        description={`Are you sure you want to delete "${categoryToDelete?.name}"? This action cannot be undone.`}
+        title="Delete Product"
+        description={`Are you sure you want to delete "${productToDelete?.name}"? This action cannot be undone.`}
         confirmText="Delete"
         cancelText="Cancel"
         type="danger"
         isLoading={deleteLoading}
       />
 
-      {/* Deleted Categories Modal */}
-      <DeletedCategoriesModal
+      {/* Deleted Products Modal */}
+      <DeletedProductsModal
         isOpen={showDeleted}
         onClose={closeDeletedView}
         onRestore={() => {
-          // Refresh categories list after restore
-          fetchCategories();
+          // Refresh products list after restore
+          fetchProducts();
         }}
       />
     </DashboardLayout>

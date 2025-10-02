@@ -12,9 +12,10 @@ interface ProductModalProps {
   product?: Product;
   onSave: (data: CreateProductData | UpdateProductData) => Promise<void>;
   isLoading?: boolean;
+  defaultCategoryId?: number; // Add default category ID for category view context
 }
 
-export default function ProductModal({ isOpen, onClose, mode, product, onSave, isLoading = false }: ProductModalProps) {
+export default function ProductModal({ isOpen, onClose, mode, product, onSave, isLoading = false, defaultCategoryId }: ProductModalProps) {
   const [formData, setFormData] = useState<CreateProductData>({
     categoryId: 0,
     name: '',
@@ -50,14 +51,14 @@ export default function ProductModal({ isOpen, onClose, mode, product, onSave, i
         });
       } else if (mode === 'create') {
         setFormData({
-          categoryId: 0,
+          categoryId: defaultCategoryId || 0, // Use defaultCategoryId if provided
           name: '',
           description: '',
         });
       }
       setErrors({});
     }
-  }, [isOpen, mode, product, fetchCategories]);
+  }, [isOpen, mode, product, fetchCategories, defaultCategoryId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
