@@ -407,7 +407,17 @@ export default function CategoriesPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {category?.brandName || 'Unknown Brand'}
+                          {category?.brandId ? (
+                            <button
+                              onClick={() => router.push(`/dashboard/brands/${category.brandId}`)}
+                              className="text-indigo-600 hover:text-indigo-900 hover:underline transition-colors duration-200"
+                              title="View brand categories"
+                            >
+                              {category?.brandName || 'Unknown Brand'}
+                            </button>
+                          ) : (
+                            <span>{category?.brandName || 'Unknown Brand'}</span>
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
