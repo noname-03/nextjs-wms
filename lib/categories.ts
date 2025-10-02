@@ -180,3 +180,24 @@ export const restoreCategory = async (id: number): Promise<CategoryResponse> => 
     throw error;
   }
 };
+
+export const getCategoriesByBrandId = async (brandId: number): Promise<CategoryResponse> => {
+  try {
+    console.log('Fetching categories for brand ID:', brandId);
+    const response = await fetch(`${API_BASE_URL}/categories/brand/${brandId}`, {
+      method: 'GET',
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('Categories by brand response:', data);
+    return data;
+  } catch (error) {
+    console.error('Error fetching categories by brand:', error);
+    throw error;
+  }
+};

@@ -1,35 +1,42 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { useAlert } from '@/components/AlertProvider';
 import DashboardLayout from '@/components/DashboardLayout';
-import BrandModal from '@/components/BrandModal';
+import CategoryModal from '@/components/CategoryModal';
 import ConfirmModal from '@/components/ConfirmModal';
-import DeletedBrandsModal from '@/components/DeletedBrandsModal';
+import DeletedCategoriesModal from '@/components/DeletedCategoriesModal';
 import ViewDeletedButton from '@/components/ViewDeletedButton';
 import { useDeletedItems } from '@/hooks/useDeletedItems';
 import { 
-  getBrands, 
-  getBrand, 
-  createBrand, 
-  updateBrand, 
-  deleteBrand, 
-  Brand, 
-  CreateBrandData, 
-  UpdateBrandData 
-} from '@/lib/brands';
+  getCategoriesByBrandId,
+  getCategory, 
+  createCategory, 
+  updateCategory, 
+  deleteCategory, 
+  Category, 
+  CreateCategoryData, 
+  UpdateCategoryData 
+} from '@/lib/categories';
+import { getBrand, Brand } from '@/lib/brands';
 
-export default function BrandsPage() {
+export default function BrandViewPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { showSuccess, showError } = useAlert();
   const router = useRouter();
+  const params = useParams();
+  const brandId = Number(params.id);
   const [mounted, setMounted] = useState(false);
 
-  // Brands state
-  const [brands, setBrands] = useState<Brand[]>([]);
-  const [filteredBrands, setFilteredBrands] = useState<Brand[]>([]);
+  // Brand state
+  const [brand, setBrand] = useState<Brand | null>(null);
+  const [brandLoading, setBrandLoading] = useState(true);
+
+  // Categories state
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -37,12 +44,12 @@ export default function BrandsPage() {
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'view' | 'create' | 'edit'>('view');
-  const [selectedBrand, setSelectedBrand] = useState<Brand | undefined>();
+  const [selectedCategory, setSelectedCategory] = useState<Category | undefined>();
   const [modalLoading, setModalLoading] = useState(false);
 
   // Confirm modal state
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [brandToDelete, setBrandToDelete] = useState<Brand | undefined>();
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | undefined>();
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Deleted items state
@@ -54,153 +61,187 @@ export default function BrandsPage() {
 
   useEffect(() => {
     if (mounted && !authLoading && !user) {
-      console.log('🚫 Brands page - No user, redirecting to login');
+      console.log('🚫 Brand view page - No user, redirecting to login');
       router.push('/login');
     }
   }, [user, authLoading, router, mounted]);
 
-  const fetchBrands = useCallback(async () => {
+  // Validate brandId
+  useEffect(() => {
+    if (mounted && isNaN(brandId)) {
+      showError('Invalid brand ID');
+      router.push('/dashboard/brands');
+    }
+  }, [mounted, brandId, router, showError]);
+
+  const fetchBrand = useCallback(async () => {
+    if (isNaN(brandId)) return;
+    
+    setBrandLoading(true);
+    try {
+      const response = await getBrand(brandId);
+      if (response.code === 200 && response.data && !Array.isArray(response.data)) {
+        setBrand(response.data);
+      } else {
+        showError('Brand not found');
+        router.push('/dashboard/brands');
+      }
+    } catch (error) {
+      console.error('Error fetching brand:', error);
+      showError('Failed to fetch brand');
+      router.push('/dashboard/brands');
+    } finally {
+      setBrandLoading(false);
+    }
+  }, [brandId, showError, router]);
+
+  const fetchCategories = useCallback(async () => {
+    if (isNaN(brandId)) return;
+    
     setIsLoading(true);
     setError('');
     
     try {
-      const response = await getBrands();
+      const response = await getCategoriesByBrandId(brandId);
       
       if (response.code === 200 && Array.isArray(response.data)) {
-        setBrands(response.data);
-        setFilteredBrands(response.data);
+        setCategories(response.data);
+        setFilteredCategories(response.data);
       } else {
-        showError(response.message || 'Failed to fetch brands');
-        setBrands([]);
-        setFilteredBrands([]);
+        showError(response.message || 'Failed to fetch categories');
+        setCategories([]);
+        setFilteredCategories([]);
       }
     } catch (error) {
-      console.error('Error fetching brands:', error);
-      showError('Failed to fetch brands');
-      setBrands([]);
+      console.error('Error fetching categories:', error);
+      showError('Failed to fetch categories');
+      setCategories([]);
     } finally {
       setIsLoading(false);
     }
-  }, [showError]);
+  }, [brandId, showError]);
 
   useEffect(() => {
-    if (mounted && user) {
-      fetchBrands();
+    if (mounted && user && !isNaN(brandId)) {
+      fetchBrand();
+      fetchCategories();
     }
-  }, [mounted, user, fetchBrands]);
+  }, [mounted, user, brandId, fetchBrand, fetchCategories]);
 
-  // Filter brands based on search term
+  // Filter categories based on search term
   useEffect(() => {
     if (!searchTerm.trim()) {
-      setFilteredBrands(brands);
+      setFilteredCategories(categories);
     } else {
-      const filtered = brands.filter(brand =>
-        brand.name.toLowerCase().includes(searchTerm.toLowerCase())
+      const filtered = categories.filter(category =>
+        category.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      setFilteredBrands(filtered);
+      setFilteredCategories(filtered);
     }
-  }, [brands, searchTerm]);
+  }, [categories, searchTerm]);
 
-  const handleView = async (brand: Brand) => {
+  const handleView = async (category: Category) => {
     try {
-      const response = await getBrand(brand.id);
+      const response = await getCategory(category.id);
       if (response.code === 200 && response.data && !Array.isArray(response.data)) {
-        setSelectedBrand(response.data);
+        setSelectedCategory(response.data);
         setModalMode('view');
         setModalOpen(true);
       } else {
-        showError('Failed to fetch brand details');
+        showError('Failed to fetch category details');
       }
     } catch (error) {
-      console.error('Error fetching brand:', error);
-      showError('Failed to fetch brand details');
+      console.error('Error fetching category:', error);
+      showError('Failed to fetch category details');
     }
   };
 
   const handleCreate = () => {
-    setSelectedBrand(undefined);
+    setSelectedCategory(undefined);
     setModalMode('create');
     setModalOpen(true);
   };
 
-  const handleEdit = async (brand: Brand) => {
+  const handleEdit = async (category: Category) => {
     try {
-      const response = await getBrand(brand.id);
+      const response = await getCategory(category.id);
       if (response.code === 200 && response.data && !Array.isArray(response.data)) {
-        setSelectedBrand(response.data);
+        setSelectedCategory(response.data);
         setModalMode('edit');
         setModalOpen(true);
       } else {
-        showError('Failed to fetch brand details');
+        showError('Failed to fetch category details');
       }
     } catch (error) {
-      console.error('Error fetching brand:', error);
-      showError('Failed to fetch brand details');
+      console.error('Error fetching category:', error);
+      showError('Failed to fetch category details');
     }
   };
 
-  const handleSave = async (data: CreateBrandData | UpdateBrandData) => {
+  const handleSave = async (data: CreateCategoryData | UpdateCategoryData) => {
     setModalLoading(true);
     
     try {
       let response;
       
       if (modalMode === 'create') {
-        response = await createBrand(data as CreateBrandData);
-      } else if (modalMode === 'edit' && selectedBrand) {
-        response = await updateBrand(selectedBrand.id, data as UpdateBrandData);
+        // Set brandId to current brand for new categories
+        const createData = { ...data as CreateCategoryData, brandId };
+        response = await createCategory(createData);
+      } else if (modalMode === 'edit' && selectedCategory) {
+        response = await updateCategory(selectedCategory.id, data as UpdateCategoryData);
       }
       
       if (response && (response.code === 200 || response.code === 201)) {
         setModalOpen(false);
-        await fetchBrands(); // Refresh the table
-        showSuccess(`Brand ${modalMode === 'create' ? 'created' : 'updated'} successfully!`);
+        await fetchCategories(); // Refresh the table
+        showSuccess(`Category ${modalMode === 'create' ? 'created' : 'updated'} successfully!`);
       } else {
-        showError(response?.message || `Failed to ${modalMode} brand`);
+        showError(response?.message || `Failed to ${modalMode} category`);
       }
     } catch (error) {
-      console.error(`Error ${modalMode} brand:`, error);
-      showError(`Failed to ${modalMode} brand`);
+      console.error(`Error ${modalMode} category:`, error);
+      showError(`Failed to ${modalMode} category`);
     } finally {
       setModalLoading(false);
     }
   };
 
-  const handleDeleteClick = (brand: Brand) => {
-    setBrandToDelete(brand);
+  const handleDeleteClick = (category: Category) => {
+    setCategoryToDelete(category);
     setConfirmOpen(true);
   };
 
   const handleConfirmDelete = async () => {
-    if (!brandToDelete) return;
+    if (!categoryToDelete) return;
     
     setDeleteLoading(true);
     try {
-      const response = await deleteBrand(brandToDelete.id);
-      console.log('Delete brand response:', brandToDelete.id);
+      const response = await deleteCategory(categoryToDelete.id);
+      console.log('Delete category response:', categoryToDelete.id);
       if (response.code === 200) {
         setConfirmOpen(false);
-        setBrandToDelete(undefined);
-        await fetchBrands(); // Refresh the table
-        showSuccess('Brand deleted successfully!');
+        setCategoryToDelete(undefined);
+        await fetchCategories(); // Refresh the table
+        showSuccess('Category deleted successfully!');
       } else {
-        showError(response.message || 'Failed to delete brand');
+        showError(response.message || 'Failed to delete category');
       }
     } catch (error) {
-      console.error('Error deleting brand:', error);
-      showError('Failed to delete brand');
+      console.error('Error deleting category:', error);
+      showError('Failed to delete category');
     } finally {
       setDeleteLoading(false);
     }
   };
 
-  if (!mounted || authLoading) {
+  if (!mounted || authLoading || brandLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="mx-auto h-16 w-16 bg-indigo-600 rounded-full flex items-center justify-center mb-4 animate-pulse">
             <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Loading...</h2>
@@ -215,21 +256,49 @@ export default function BrandsPage() {
     );
   }
 
-  if (!user) {
+  if (!user || !brand) {
     return null; // Will redirect in useEffect
   }
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
+        {/* Brand Header */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => router.push('/dashboard/brands')}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                title="Back to Brands"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <div className="p-3 bg-indigo-100 rounded-lg">
+                <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">{brand.name}</h1>
+                <p className="text-sm text-gray-500">
+                  {brand.description || 'Brand categories and management'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Page header */}
         <div className="sm:flex sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-              Brand Management
-            </h1>
+            <h2 className="text-xl font-bold leading-7 text-gray-900 sm:text-2xl sm:truncate">
+              Categories for {brand.name}
+            </h2>
             <p className="mt-1 text-sm text-gray-500">
-              Manage your product brands and their information.
+              Manage categories for this brand and their information.
             </p>
           </div>
         </div>
@@ -247,7 +316,7 @@ export default function BrandsPage() {
                 </div>
                 <input
                   type="text"
-                  placeholder="Search brands..."
+                  placeholder="Search categories..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 text-gray-900 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -269,10 +338,10 @@ export default function BrandsPage() {
             <div className="text-sm text-gray-500">
               {searchTerm ? (
                 <span>
-                  Showing {filteredBrands.length} of {brands.length} brands
+                  Showing {filteredCategories.length} of {categories.length} categories
                 </span>
               ) : (
-                <span>{brands.length} brands total</span>
+                <span>{categories.length} categories total</span>
               )}
             </div>
             
@@ -280,7 +349,7 @@ export default function BrandsPage() {
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <ViewDeletedButton
                 onClick={openDeletedView}
-                itemName="Brands"
+                itemName="Categories"
               />
               <button
                 onClick={handleCreate}
@@ -289,7 +358,7 @@ export default function BrandsPage() {
                 <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
-                <span className="hidden sm:inline">Add New Brand</span>
+                <span className="hidden sm:inline">Add New Category</span>
                 <span className="sm:hidden">Add New</span>
               </button>
             </div>
@@ -305,7 +374,7 @@ export default function BrandsPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Loading Brands</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Loading Categories</h3>
               <p className="text-gray-500">Please wait while we fetch the data...</p>
             </div>
           ) : error ? (
@@ -315,16 +384,16 @@ export default function BrandsPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Brands</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Categories</h3>
               <p className="text-gray-500 mb-4">{error}</p>
               <button
-                onClick={fetchBrands}
+                onClick={fetchCategories}
                 className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
               >
                 Try Again
               </button>
             </div>
-          ) : filteredBrands.length === 0 ? (
+          ) : filteredCategories.length === 0 ? (
             <div className="p-8 text-center">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full mb-4">
                 {searchTerm ? (
@@ -338,13 +407,13 @@ export default function BrandsPage() {
                 )}
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {searchTerm ? 'No brands found' : 'No Brands Found'}
+                {searchTerm ? 'No categories found' : 'No Categories Found'}
               </h3>
               <p className="text-gray-500 mb-4">
                 {searchTerm ? (
-                  <>No brands match your search for "{searchTerm}"</>
+                  <>No categories match your search for "{searchTerm}"</>
                 ) : (
-                  'Get started by creating your first brand.'
+                  `Get started by creating your first category for ${brand.name}.`
                 )}
               </p>
               {searchTerm ? (
@@ -362,7 +431,7 @@ export default function BrandsPage() {
                   <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                   </svg>
-                  Add First Brand
+                  Add First Category
                 </button>
               )}
             </div>
@@ -375,13 +444,16 @@ export default function BrandsPage() {
                       No
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
-                      Brand Name
+                      Category Name
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+                      Description
                     </th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
                       <div className="flex items-center justify-end space-x-2">
                         <span>Actions</span>
                         <button
-                          onClick={fetchBrands}
+                          onClick={fetchCategories}
                           disabled={isLoading}
                           className="p-1 text-gray-400 hover:text-indigo-600 disabled:opacity-50 transition-colors duration-200"
                           title="Refresh data"
@@ -395,24 +467,23 @@ export default function BrandsPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredBrands.map((brand, index) => (
-                    <tr key={brand.id} className="hover:bg-gray-50">
+                  {filteredCategories.map((category, index) => (
+                    <tr key={category.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {index + 1}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <button
-                          onClick={() => router.push(`/dashboard/brands/${brand.id}`)}
-                          className="text-sm font-medium text-indigo-600 hover:text-indigo-900 hover:underline transition-colors duration-200"
-                          title="View brand categories"
-                        >
-                          {brand.name}
-                        </button>
+                        <div className="text-sm font-medium text-gray-900">{category.name}</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-900 max-w-xs truncate">
+                          {category.description || '-'}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
                           <button
-                            onClick={() => handleView(brand)}
+                            onClick={() => handleView(category)}
                             className="text-indigo-600 hover:text-indigo-900 p-1 rounded-md hover:bg-indigo-50"
                             title="View"
                           >
@@ -422,7 +493,7 @@ export default function BrandsPage() {
                             </svg>
                           </button>
                           <button
-                            onClick={() => handleEdit(brand)}
+                            onClick={() => handleEdit(category)}
                             className="text-yellow-600 hover:text-yellow-900 p-1 rounded-md hover:bg-yellow-50"
                             title="Edit"
                           >
@@ -431,7 +502,7 @@ export default function BrandsPage() {
                             </svg>
                           </button>
                           <button
-                            onClick={() => handleDeleteClick(brand)}
+                            onClick={() => handleDeleteClick(category)}
                             className="text-red-600 hover:text-red-900 p-1 rounded-md hover:bg-red-50"
                             title="Delete"
                           >
@@ -450,14 +521,15 @@ export default function BrandsPage() {
         </div>
       </div>
 
-      {/* Brand Modal */}
-      <BrandModal
+      {/* Category Modal */}
+      <CategoryModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         mode={modalMode}
-        brand={selectedBrand}
+        category={selectedCategory}
         onSave={handleSave}
         isLoading={modalLoading}
+        defaultBrandId={brandId} // Pass brandId as default
       />
 
       {/* Confirm Delete Modal */}
@@ -465,24 +537,24 @@ export default function BrandsPage() {
         isOpen={confirmOpen}
         onClose={() => {
           setConfirmOpen(false);
-          setBrandToDelete(undefined);
+          setCategoryToDelete(undefined);
         }}
         onConfirm={handleConfirmDelete}
-        title="Delete Brand"
-        description={`Are you sure you want to delete "${brandToDelete?.name}"? This action cannot be undone.`}
+        title="Delete Category"
+        description={`Are you sure you want to delete "${categoryToDelete?.name}"? This action cannot be undone.`}
         confirmText="Delete"
         cancelText="Cancel"
         type="danger"
         isLoading={deleteLoading}
       />
 
-      {/* Deleted Brands Modal */}
-      <DeletedBrandsModal
+      {/* Deleted Categories Modal */}
+      <DeletedCategoriesModal
         isOpen={showDeleted}
         onClose={closeDeletedView}
         onRestore={() => {
-          // Refresh brands list after restore
-          fetchBrands();
+          // Refresh categories list after restore
+          fetchCategories();
         }}
       />
     </DashboardLayout>
