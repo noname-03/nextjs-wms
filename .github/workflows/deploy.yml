@@ -1,0 +1,14 @@
+# .github/workflows/deploy.yml
+name: Deploy to EasyPanel
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger EasyPanel Deploy
+        run: curl -X POST "http://52.63.176.112:3000/api/deploy/f261adb93e3fee6e7a9a56e115aa92217a7dc9b477faa16c"
