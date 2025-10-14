@@ -53,8 +53,12 @@ export default function ProductBatchesPage() {
   const fetchProductBatches = useCallback(async () => {
     setIsLoading(true);
     try {
-      const data = await getProductBatches();
-      setProductBatches(data);
+      const response = await getProductBatches();
+      if (response.code === 200 && response.data && Array.isArray(response.data)) {
+        setProductBatches(response.data);
+      } else if (response.code !== 200) {
+        showAlert(response.message || 'Error fetching product batches', 'error');
+      }
     } catch (error) {
       console.error('Error fetching product batches:', error);
       showAlert('Error fetching product batches', 'error');

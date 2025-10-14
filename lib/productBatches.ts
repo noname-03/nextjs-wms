@@ -47,30 +47,27 @@ function getAuthHeaders() {
   };
 }
 
-export async function getProductBatches(): Promise<ProductBatch[]> {
-  console.log('Fetching product batches...');
-
+export async function getProductBatches(): Promise<ProductBatchResponse> {
   try {
+    console.log('🔍 Fetching product batches...');
+    
     const response = await fetch(`${API_BASE_URL}/product-batches`, {
       method: 'GET',
       headers: getAuthHeaders(),
     });
 
-    console.log('Product batches response status:', response.status);
-
-    if (!response.ok) {
-      const errorData = await response.text();
-      console.error('Failed to fetch product batches:', errorData);
-      throw new Error(`Failed to fetch product batches: ${response.status} ${response.statusText}`);
-    }
-
     const data = await response.json();
-    console.log('Product batches data received:', data);
     
-    return data.data || [];
+    console.log('📥 Get product batches response status:', response.status);
+    console.log('📥 Get product batches response data:', data);
+
+    return data;
   } catch (error) {
-    console.error('Error fetching product batches:', error);
-    throw error;
+    console.error('❌ Get product batches error:', error);
+    return {
+      code: 500,
+      message: 'Network error or server unavailable',
+    };
   }
 }
 

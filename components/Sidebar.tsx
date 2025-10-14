@@ -62,16 +62,19 @@ const brandSubmenu = [
   }
 ];
 
-const otherMenuItems = [
+const inventorySubmenu = [
   {
-    name: 'Inventory',
-    href: '/dashboard/inventory',
+    name: 'Stock',
+    href: '/dashboard/inventory/stock',
     icon: (
-      <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
       </svg>
     ),
-  },
+  }
+];
+
+const otherMenuItems = [
   {
     name: 'Orders',
     href: '/dashboard/orders',
@@ -114,14 +117,22 @@ const otherMenuItems = [
 export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
   const [isBrandOpen, setIsBrandOpen] = useState(false);
+  const [isInventoryOpen, setIsInventoryOpen] = useState(false);
 
   const toggleBrandCard = () => {
     setIsBrandOpen(!isBrandOpen);
   };
 
+  const toggleInventoryCard = () => {
+    setIsInventoryOpen(!isInventoryOpen);
+  };
+
   const isBrandActive = pathname.startsWith('/dashboard/brands') || 
                        pathname.startsWith('/dashboard/categories') || 
-                       pathname.startsWith('/dashboard/products');
+                       pathname.startsWith('/dashboard/products') ||
+                       pathname.startsWith('/dashboard/product-batches');
+
+  const isInventoryActive = pathname.startsWith('/dashboard/inventory');
 
   // Auto-open Brand Management section when on brand-related pages
   useEffect(() => {
@@ -129,6 +140,13 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse
       setIsBrandOpen(true);
     }
   }, [isBrandActive]);
+
+  // Auto-open Inventory section when on inventory pages
+  useEffect(() => {
+    if (isInventoryActive) {
+      setIsInventoryOpen(true);
+    }
+  }, [isInventoryActive]);
 
   return (
     <>
@@ -247,6 +265,65 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse
               {(isBrandOpen || isCollapsed) && !isCollapsed && (
                 <div className="ml-4 space-y-1 border-l-2 border-gray-200 pl-4">
                   {brandSubmenu.map((item) => {
+                    const isActive = pathname === item.href;
+                    return (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+                          isActive
+                            ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-700'
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        }`}
+                        onClick={() => onClose()}
+                      >
+                        <span className={`${isActive ? 'text-indigo-700' : 'text-gray-400'} mr-2`}>
+                          {item.icon}
+                        </span>
+                        {item.name}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Inventory Management Card */}
+            <div className="space-y-1">
+              {/* Inventory Header - Collapsible */}
+              <button
+                onClick={toggleInventoryCard}
+                className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                  isInventoryActive
+                    ? 'bg-indigo-100 text-indigo-700'
+                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                } ${isCollapsed ? 'lg:px-2 lg:justify-center' : ''}`}
+                title={isCollapsed ? 'Inventory' : undefined}
+              >
+                <div className="flex items-center">
+                  <span className={`${isInventoryActive ? 'text-indigo-700' : 'text-gray-400'} ${isCollapsed ? '' : 'mr-3'}`}>
+                    <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                  </span>
+                  {!isCollapsed && <span>Inventory</span>}
+                </div>
+                {!isCollapsed && (
+                  <svg 
+                    className={`h-4 w-4 transition-transform duration-200 ${isInventoryOpen ? 'rotate-180' : ''}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                )}
+              </button>
+
+              {/* Inventory Submenu */}
+              {(isInventoryOpen || isCollapsed) && !isCollapsed && (
+                <div className="ml-4 space-y-1 border-l-2 border-gray-200 pl-4">
+                  {inventorySubmenu.map((item) => {
                     const isActive = pathname === item.href;
                     return (
                       <Link
