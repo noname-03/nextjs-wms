@@ -1,6 +1,5 @@
 import { getAuthToken } from './auth';
-
-const API_BASE_URL = 'https://apigo.fahrurrozi.web.id/api/v1';
+import { API_BASE_URL } from './config';
 
 export interface Brand {
   id: number;
