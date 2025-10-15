@@ -2,7 +2,7 @@ import { getAuthToken } from './auth';
 import { API_BASE_URL } from './config';
 
 export interface InventoryStock {
-  id: number;
+  id?: number;
   productId: number;
   productName: string;
   categoryId: number;
@@ -11,11 +11,15 @@ export interface InventoryStock {
   brandName: string;
   locationId: number;
   locationName: string;
-  productBatchId: number;
+  productBatchId?: number;
   codeBatch: string;
-  quantity: number;
+  quantity?: number;
+  stock?: number; // Alias untuk quantity
   expDate?: string;
   unitPrice?: number;
+  productUnitPrice?: number; // Alias untuk unitPrice
+  barcode?: string;
+  purchasePrice?: number;
 }
 
 export interface InventoryStockResponse {
@@ -30,6 +34,7 @@ export interface InventoryStockFilters {
   productId?: number;
   locationId?: number;
   productBatchId?: number;
+  barcode?: string;
 }
 
 // Get authorization headers
@@ -50,6 +55,7 @@ function buildQueryString(filters: InventoryStockFilters): string {
   if (filters.productId) params.append('productId', filters.productId.toString());
   if (filters.locationId) params.append('locationId', filters.locationId.toString());
   if (filters.productBatchId) params.append('productBatchId', filters.productBatchId.toString());
+  if (filters.barcode) params.append('barcode', filters.barcode);
   
   const queryString = params.toString();
   return queryString ? `?${queryString}` : '';

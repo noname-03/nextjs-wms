@@ -39,10 +39,14 @@ export default function InventoryStockPage() {
     productId: undefined,
     locationId: undefined,
     productBatchId: undefined,
+    barcode: undefined,
   });
 
   // Search term
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Barcode input
+  const [barcodeInput, setBarcodeInput] = useState('');
 
   // Fetch all master data on mount
   useEffect(() => {
@@ -198,7 +202,55 @@ export default function InventoryStockPage() {
       productId: undefined,
       locationId: undefined,
       productBatchId: undefined,
+      barcode: undefined,
     });
+    setBarcodeInput('');
+  };
+
+  // Handle barcode search (when Enter is pressed)
+  const handleBarcodeSearch = async () => {
+    if (!barcodeInput.trim()) {
+      showAlert('Please enter a barcode', 'error');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const response = await getInventoryStock({ barcode: barcodeInput.trim() });
+      
+      if (response.code === 200 && response.data && Array.isArray(response.data) && response.data.length > 0) {
+        const stockData = response.data[0];
+        
+        // Auto-fill filters based on barcode result
+        setFilters({
+          brandId: stockData.brandId,
+          categoryId: stockData.categoryId,
+          productId: stockData.productId,
+          locationId: stockData.locationId,
+          productBatchId: stockData.productBatchId,
+          barcode: barcodeInput.trim(),
+        });
+        
+        setInventoryStock(response.data);
+        showAlert('Barcode found successfully', 'success');
+      } else {
+        showAlert('No inventory found for this barcode', 'error');
+        setInventoryStock([]);
+      }
+    } catch (error) {
+      console.error('Error searching barcode:', error);
+      showAlert('Error searching barcode', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle barcode input key press
+  const handleBarcodeKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleBarcodeSearch();
+    }
   };
 
   // Filter stock based on search term
@@ -211,7 +263,8 @@ export default function InventoryStockPage() {
       stock.brandName.toLowerCase().includes(search) ||
       stock.categoryName.toLowerCase().includes(search) ||
       stock.locationName.toLowerCase().includes(search) ||
-      stock.codeBatch.toLowerCase().includes(search)
+      stock.codeBatch.toLowerCase().includes(search) ||
+      (stock.barcode && stock.barcode.toLowerCase().includes(search))
     );
   }, [inventoryStock, searchTerm]);
 
@@ -343,6 +396,35 @@ export default function InventoryStockPage() {
               disabled={loadingLocations}
               loading={loadingLocations}
             />
+
+            {/* Barcode Filter */}
+            <div>
+              <label htmlFor="barcode" className="block text-sm font-medium text-gray-700 mb-1">
+                Barcode
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  id="barcode"
+                  value={barcodeInput}
+                  onChange={(e) => setBarcodeInput(e.target.value)}
+                  onKeyPress={handleBarcodeKeyPress}
+                  placeholder="Enter barcode and press Enter"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 bg-white"
+                  disabled={isLoading}
+                />
+                {barcodeInput && (
+                  <button
+                    onClick={() => setBarcodeInput('')}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    <svg className="h-4 w-4 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -439,6 +521,9 @@ export default function InventoryStockPage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
                       Batch Code
                     </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 w-28">
+                      Barcode
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
                       Location
                     </th>
@@ -457,42 +542,50 @@ export default function InventoryStockPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredStock.map((stock, index) => (
-                    <tr key={`stock-${stock.id}-${index}`} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {index + 1}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{stock.brandName}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{stock.categoryName}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{stock.productName}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{stock.codeBatch}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{stock.locationName}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{stock.quantity}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{formatPrice(stock.unitPrice)}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          {formatPrice(stock.unitPrice && stock.quantity ? stock.unitPrice * stock.quantity : 0)}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{formatDate(stock.expDate)}</div>
-                      </td>
-                    </tr>
-                  ))}
+                  {filteredStock.map((stock, index) => {
+                    const qty = stock.stock ?? stock.quantity ?? 0;
+                    const price = stock.productUnitPrice ?? stock.unitPrice ?? 0;
+                    
+                    return (
+                      <tr key={`stock-${stock.id}-${index}`} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {index + 1}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{stock.brandName}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{stock.categoryName}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">{stock.productName}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{stock.codeBatch}</div>
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap w-28">
+                          <div className="text-sm text-gray-900">{stock.barcode || '-'}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{stock.locationName}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">{qty}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{formatPrice(price)}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">
+                            {formatPrice(price * qty)}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{formatDate(stock.expDate)}</div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
