@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { useAlert } from '@/components/AlertProvider';
 import DashboardLayout from '@/components/DashboardLayout';
@@ -21,14 +20,10 @@ import {
 type ModalMode = 'create' | 'edit' | 'view';
 
 export default function ProductStocksPage() {
-  const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
   const { showAlert } = useAlert();
-  const [mounted, setMounted] = useState(false);
 
-  // Data states
   const [productStocks, setProductStocks] = useState<ProductStock[]>([]);
-  const [filteredProductStocks, setFilteredProductStocks] = useState<ProductStock[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -53,16 +48,6 @@ export default function ProductStocksPage() {
     productStock: null,
   });
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (mounted && !authLoading && !user) {
-      router.push('/login');
-    }
-  }, [mounted, authLoading, user, router]);
-
   // Fetch product stocks
   const fetchProductStocks = useCallback(async () => {
     setIsLoading(true);
@@ -71,7 +56,7 @@ export default function ProductStocksPage() {
       if (response.code === 200 && response.data && Array.isArray(response.data)) {
         setProductStocks(response.data);
       } else if (response.code !== 200) {
-        showAlert(response.message || 'Failed to fetch product stocks', 'error');
+        showAlert(response.message || 'Error fetching product stocks', 'error');
       }
     } catch (error) {
       console.error('Error fetching product stocks:', error);
@@ -82,25 +67,15 @@ export default function ProductStocksPage() {
   }, [showAlert]);
 
   useEffect(() => {
-    if (mounted && user) {
-      fetchProductStocks();
-    }
-  }, [mounted, user, fetchProductStocks]);
+    fetchProductStocks();
+  }, [fetchProductStocks]);
 
   // Filter product stocks based on search term
-  useEffect(() => {
-    if (!searchTerm.trim()) {
-      setFilteredProductStocks(productStocks);
-    } else {
-      const search = searchTerm.toLowerCase();
-      const filtered = productStocks.filter(stock =>
-        stock.productName.toLowerCase().includes(search) ||
-        stock.productBatchCode.toLowerCase().includes(search) ||
-        stock.locationName.toLowerCase().includes(search)
-      );
-      setFilteredProductStocks(filtered);
-    }
-  }, [searchTerm, productStocks]);
+  const filteredProductStocks = productStocks.filter(stock =>
+    stock.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    stock.productBatchCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    stock.locationName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   // Handle create
   const handleCreate = () => {
@@ -208,20 +183,6 @@ export default function ProductStocksPage() {
       setIsSubmitting(false);
     }
   };
-
-  if (!mounted || authLoading) {
-    return (
-      <DashboardLayout>
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
 
   return (
     <DashboardLayout>
