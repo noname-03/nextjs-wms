@@ -480,7 +480,12 @@ export default function CategoryViewPage() {
                         {index + 1}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                        <button
+                          onClick={() => router.push(`/dashboard/products/${product.id}`)}
+                          className="text-sm font-medium text-indigo-600 hover:text-indigo-900 hover:underline cursor-pointer"
+                        >
+                          {product.name}
+                        </button>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{product.brandName}</div>
