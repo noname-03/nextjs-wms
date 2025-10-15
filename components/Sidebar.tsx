@@ -160,17 +160,18 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse
 
   return (
     <>
-      {/* Mobile overlay */}
+      {/* Mobile overlay - backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 transition-opacity lg:hidden"
+          className="fixed inset-0 z-[60] bg-opacity-50 backdrop-blur-sm transition-opacity duration-300 lg:hidden"
           onClick={onClose}
+          aria-hidden="true"
         />
       )}
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 bg-white shadow-xl transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
+        className={`fixed inset-y-0 left-0 z-[70] bg-white shadow-2xl transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 lg:z-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         } ${isCollapsed ? 'lg:w-16' : 'lg:w-64'} w-64`}
       >
