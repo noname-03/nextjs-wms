@@ -14,7 +14,7 @@ interface ProductUnitModalProps {
   productUnit?: ProductUnit;
   onSave: (data: CreateProductUnitData | UpdateProductUnitData) => Promise<void>;
   isLoading?: boolean;
-  defaultProductId?: number; // ID produk yang akan di-default saat create mode
+      defaultProductId?: number; // ID produk yang akan di-default saat create mode
 }
 
 export default function ProductUnitModal({ isOpen, onClose, mode, productUnit, onSave, isLoading = false, defaultProductId }: ProductUnitModalProps) {

@@ -458,7 +458,7 @@ export default function InventoryStockPage() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredStock.map((stock, index) => (
-                    <tr key={stock.id} className="hover:bg-gray-50">
+                    <tr key={`stock-${stock.id}-${index}`} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {index + 1}
                       </td>
