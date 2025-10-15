@@ -6,8 +6,32 @@ import { useAuth } from '@/components/AuthProvider';
 import { useAlert } from '@/components/AlertProvider';
 import DashboardLayout from '@/components/DashboardLayout';
 import { getProduct, Product } from '@/lib/products';
-import { getProductBatchesByProduct, ProductBatch } from '@/lib/productBatches';
-import { getProductUnitsByProduct, ProductUnit } from '@/lib/productUnits';
+import { 
+  getProductBatchesByProduct, 
+  ProductBatch, 
+  createProductBatch, 
+  updateProductBatch, 
+  deleteProductBatch, 
+  getProductBatchById,
+  CreateProductBatchData,
+  UpdateProductBatchData 
+} from '@/lib/productBatches';
+import { 
+  getProductUnitsByProduct, 
+  ProductUnit,
+  createProductUnit,
+  updateProductUnit,
+  deleteProductUnit,
+  getProductUnitById,
+  CreateProductUnitData,
+  UpdateProductUnitData
+} from '@/lib/productUnits';
+import ProductBatchModal from '@/components/ProductBatchModal';
+import ProductUnitModal from '@/components/ProductUnitModal';
+import ConfirmModal from '@/components/ConfirmModal';
+
+type BatchModalMode = 'view' | 'create' | 'edit';
+type UnitModalMode = 'view' | 'create' | 'edit';
 
 export default function ProductViewPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -32,6 +56,41 @@ export default function ProductViewPage() {
   const [filteredUnits, setFilteredUnits] = useState<ProductUnit[]>([]);
   const [unitsLoading, setUnitsLoading] = useState(true);
   const [unitSearchTerm, setUnitSearchTerm] = useState('');
+
+  // Product Batch Modal states
+  const [batchModal, setBatchModal] = useState<{
+    isOpen: boolean;
+    mode: BatchModalMode;
+    batch: ProductBatch | undefined;
+  }>({
+    isOpen: false,
+    mode: 'create',
+    batch: undefined,
+  });
+  const [isBatchSubmitting, setIsBatchSubmitting] = useState(false);
+
+  // Product Unit Modal states
+  const [unitModal, setUnitModal] = useState<{
+    isOpen: boolean;
+    mode: UnitModalMode;
+    unit: ProductUnit | undefined;
+  }>({
+    isOpen: false,
+    mode: 'create',
+    unit: undefined,
+  });
+  const [isUnitSubmitting, setIsUnitSubmitting] = useState(false);
+
+  // Delete Confirm states
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean;
+    type: 'batch' | 'unit' | null;
+    item: ProductBatch | ProductUnit | null;
+  }>({
+    isOpen: false,
+    type: null,
+    item: null,
+  });
 
   useEffect(() => {
     setMounted(true);
@@ -181,6 +240,197 @@ export default function ProductViewPage() {
     }).format(numPrice);
   };
 
+  // ============ Product Batch CRUD Handlers ============
+  
+  const handleCreateBatch = () => {
+    setBatchModal({
+      isOpen: true,
+      mode: 'create',
+      batch: undefined,
+    });
+  };
+
+  const handleViewBatch = async (batch: ProductBatch) => {
+    try {
+      const batchData = await getProductBatchById(batch.id);
+      setBatchModal({
+        isOpen: true,
+        mode: 'view',
+        batch: batchData,
+      });
+    } catch (error) {
+      console.error('Error fetching batch:', error);
+      showAlert('Error fetching batch details', 'error');
+    }
+  };
+
+  const handleEditBatch = async (batch: ProductBatch) => {
+    try {
+      const batchData = await getProductBatchById(batch.id);
+      setBatchModal({
+        isOpen: true,
+        mode: 'edit',
+        batch: batchData,
+      });
+    } catch (error) {
+      console.error('Error fetching batch:', error);
+      showAlert('Error fetching batch details', 'error');
+    }
+  };
+
+  const handleDeleteBatch = (batch: ProductBatch) => {
+    setDeleteConfirm({
+      isOpen: true,
+      type: 'batch',
+      item: batch,
+    });
+  };
+
+  const handleBatchModalSubmit = async (data: CreateProductBatchData | UpdateProductBatchData) => {
+    setIsBatchSubmitting(true);
+    try {
+      // Set productId default to current product
+      const batchData = { ...data, productId: productId };
+      
+      if (batchModal.mode === 'create') {
+        await createProductBatch(batchData as CreateProductBatchData);
+        showAlert('Product batch created successfully', 'success');
+        setBatchModal({ isOpen: false, mode: 'create', batch: undefined });
+        await fetchProductBatches();
+      } else if (batchModal.mode === 'edit' && batchModal.batch) {
+        await updateProductBatch(batchModal.batch.id, data as UpdateProductBatchData);
+        showAlert('Product batch updated successfully', 'success');
+        setBatchModal({ isOpen: false, mode: 'create', batch: undefined });
+        await fetchProductBatches();
+      }
+    } catch (error) {
+      console.error('Error saving batch:', error);
+      showAlert('Failed to save product batch', 'error');
+      throw error;
+    } finally {
+      setIsBatchSubmitting(false);
+    }
+  };
+
+  // ============ Product Unit CRUD Handlers ============
+  
+  const handleCreateUnit = () => {
+    setUnitModal({
+      isOpen: true,
+      mode: 'create',
+      unit: undefined,
+    });
+  };
+
+  const handleViewUnit = async (unit: ProductUnit) => {
+    try {
+      const response = await getProductUnitById(unit.id);
+      if (response.code === 200 && response.data && !Array.isArray(response.data)) {
+        setUnitModal({
+          isOpen: true,
+          mode: 'view',
+          unit: response.data,
+        });
+      } else {
+        showAlert('Failed to fetch unit details', 'error');
+      }
+    } catch (error) {
+      console.error('Error fetching unit:', error);
+      showAlert('Error fetching unit details', 'error');
+    }
+  };
+
+  const handleEditUnit = async (unit: ProductUnit) => {
+    try {
+      const response = await getProductUnitById(unit.id);
+      if (response.code === 200 && response.data && !Array.isArray(response.data)) {
+        setUnitModal({
+          isOpen: true,
+          mode: 'edit',
+          unit: response.data,
+        });
+      } else {
+        showAlert('Failed to fetch unit details', 'error');
+      }
+    } catch (error) {
+      console.error('Error fetching unit:', error);
+      showAlert('Error fetching unit details', 'error');
+    }
+  };
+
+  const handleDeleteUnit = (unit: ProductUnit) => {
+    setDeleteConfirm({
+      isOpen: true,
+      type: 'unit',
+      item: unit,
+    });
+  };
+
+  const handleUnitModalSubmit = async (data: CreateProductUnitData | UpdateProductUnitData) => {
+    setIsUnitSubmitting(true);
+    try {
+      // Set productId default to current product
+      const unitData = { ...data, productId: productId };
+      
+      if (unitModal.mode === 'create') {
+        const response = await createProductUnit(unitData as CreateProductUnitData);
+        if (response.code === 200 || response.code === 201) {
+          showAlert('Product unit created successfully', 'success');
+          setUnitModal({ isOpen: false, mode: 'create', unit: undefined });
+          await fetchProductUnits();
+        } else {
+          showAlert(response.message || 'Failed to create product unit', 'error');
+          throw new Error(response.message);
+        }
+      } else if (unitModal.mode === 'edit' && unitModal.unit) {
+        const response = await updateProductUnit(unitModal.unit.id, data as UpdateProductUnitData);
+        if (response.code === 200) {
+          showAlert('Product unit updated successfully', 'success');
+          setUnitModal({ isOpen: false, mode: 'create', unit: undefined });
+          await fetchProductUnits();
+        } else {
+          showAlert(response.message || 'Failed to update product unit', 'error');
+          throw new Error(response.message);
+        }
+      }
+    } catch (error) {
+      console.error('Error saving unit:', error);
+      showAlert('Failed to save product unit', 'error');
+      throw error;
+    } finally {
+      setIsUnitSubmitting(false);
+    }
+  };
+
+  // ============ Delete Confirm Handler ============
+  
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirm.item) return;
+
+    try {
+      if (deleteConfirm.type === 'batch') {
+        const batch = deleteConfirm.item as ProductBatch;
+        await deleteProductBatch(batch.id);
+        showAlert('Product batch deleted successfully', 'success');
+        setDeleteConfirm({ isOpen: false, type: null, item: null });
+        await fetchProductBatches();
+      } else if (deleteConfirm.type === 'unit') {
+        const unit = deleteConfirm.item as ProductUnit;
+        const response = await deleteProductUnit(unit.id);
+        if (response.code === 200) {
+          showAlert('Product unit deleted successfully', 'success');
+          setDeleteConfirm({ isOpen: false, type: null, item: null });
+          await fetchProductUnits();
+        } else {
+          showAlert(response.message || 'Failed to delete product unit', 'error');
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      showAlert(`Error deleting ${deleteConfirm.type}`, 'error');
+    }
+  };
+
   if (!mounted || authLoading || productLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -291,6 +541,17 @@ export default function ProductViewPage() {
                   <span>{batches.length} batches total</span>
                 )}
               </div>
+
+              {/* Create Button */}
+              <button
+                onClick={handleCreateBatch}
+                className="flex items-center justify-center gap-2 px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 hover:scale-105 active:scale-95"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span>Create Batch</span>
+              </button>
             </div>
           </div>
 
@@ -392,13 +653,31 @@ export default function ProductViewPage() {
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <div className="flex items-center justify-end space-x-2">
                             <button
-                              onClick={() => router.push(`/dashboard/product-batches`)}
+                              onClick={() => handleViewBatch(batch)}
                               className="text-indigo-600 hover:text-indigo-900 p-1 rounded-md hover:bg-indigo-50"
-                              title="View in Product Batches"
+                              title="View"
                             >
                               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => handleEditBatch(batch)}
+                              className="text-yellow-600 hover:text-yellow-900 p-1 rounded-md hover:bg-yellow-50"
+                              title="Edit"
+                            >
+                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => handleDeleteBatch(batch)}
+                              className="text-red-600 hover:text-red-900 p-1 rounded-md hover:bg-red-50"
+                              title="Delete"
+                            >
+                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                               </svg>
                             </button>
                           </div>
@@ -466,6 +745,17 @@ export default function ProductViewPage() {
                   <span>{units.length} units total</span>
                 )}
               </div>
+
+              {/* Create Button */}
+              <button
+                onClick={handleCreateUnit}
+                className="flex items-center justify-center gap-2 px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 hover:scale-105 active:scale-95"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span>Create Unit</span>
+              </button>
             </div>
           </div>
 
@@ -583,12 +873,31 @@ export default function ProductViewPage() {
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <div className="flex items-center justify-end space-x-2">
                             <button
+                              onClick={() => handleViewUnit(unit)}
                               className="text-indigo-600 hover:text-indigo-900 p-1 rounded-md hover:bg-indigo-50"
-                              title="View Details"
+                              title="View"
                             >
                               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => handleEditUnit(unit)}
+                              className="text-yellow-600 hover:text-yellow-900 p-1 rounded-md hover:bg-yellow-50"
+                              title="Edit"
+                            >
+                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => handleDeleteUnit(unit)}
+                              className="text-red-600 hover:text-red-900 p-1 rounded-md hover:bg-red-50"
+                              title="Delete"
+                            >
+                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                               </svg>
                             </button>
                           </div>
@@ -602,6 +911,40 @@ export default function ProductViewPage() {
           </div>
         </div>
       </div>
+
+      {/* Product Batch Modal */}
+      <ProductBatchModal
+        isOpen={batchModal.isOpen}
+        onClose={() => setBatchModal({ isOpen: false, mode: 'create', batch: undefined })}
+        mode={batchModal.mode}
+        productBatch={batchModal.batch}
+        onSave={handleBatchModalSubmit}
+        isLoading={batchesLoading}
+        defaultProductId={productId} // Defaultkan product ID saat create
+      />
+
+      {/* Product Unit Modal */}
+      <ProductUnitModal
+        isOpen={unitModal.isOpen}
+        onClose={() => setUnitModal({ isOpen: false, mode: 'create', unit: undefined })}
+        mode={unitModal.mode}
+        productUnit={unitModal.unit}
+        onSave={handleUnitModalSubmit}
+        isLoading={unitsLoading}
+        defaultProductId={productId} // Defaultkan product ID saat create
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={deleteConfirm.isOpen}
+        onClose={() => setDeleteConfirm({ isOpen: false, type: null, item: null })}
+        onConfirm={handleConfirmDelete}
+        title={`Delete ${deleteConfirm.type === 'batch' ? 'Product Batch' : 'Product Unit'}?`}
+        description={`Are you sure you want to delete this ${deleteConfirm.type === 'batch' ? 'product batch' : 'product unit'}? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
+      />
     </DashboardLayout>
   );
 }

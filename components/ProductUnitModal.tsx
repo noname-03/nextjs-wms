@@ -14,9 +14,10 @@ interface ProductUnitModalProps {
   productUnit?: ProductUnit;
   onSave: (data: CreateProductUnitData | UpdateProductUnitData) => Promise<void>;
   isLoading?: boolean;
+  defaultProductId?: number; // ID produk yang akan di-default saat create mode
 }
 
-export default function ProductUnitModal({ isOpen, onClose, mode, productUnit, onSave, isLoading = false }: ProductUnitModalProps) {
+export default function ProductUnitModal({ isOpen, onClose, mode, productUnit, onSave, isLoading = false, defaultProductId }: ProductUnitModalProps) {
   const [formData, setFormData] = useState({
     productId: 0,
     locationId: 0,
@@ -113,7 +114,7 @@ export default function ProductUnitModal({ isOpen, onClose, mode, productUnit, o
         });
       } else if (mode === 'create') {
         setFormData({
-          productId: 0,
+          productId: defaultProductId || 0, // Set default product ID jika ada
           locationId: 0,
           productBatchId: 0,
           name: '',
@@ -126,7 +127,7 @@ export default function ProductUnitModal({ isOpen, onClose, mode, productUnit, o
       }
       setErrors({});
     }
-  }, [isOpen, mode, productUnit, fetchProducts, fetchLocations, fetchBatches]);
+  }, [isOpen, mode, productUnit, defaultProductId, fetchProducts, fetchLocations, fetchBatches]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -344,7 +345,7 @@ export default function ProductUnitModal({ isOpen, onClose, mode, productUnit, o
                     }
                   }}
                   placeholder="Select a product"
-                  disabled={isLoading || loadingProducts}
+                  disabled={isLoading || loadingProducts || (mode === 'create' && !!defaultProductId)} // Disable jika create mode dan ada defaultProductId
                   loading={loadingProducts}
                   error={errors.productId}
                 />

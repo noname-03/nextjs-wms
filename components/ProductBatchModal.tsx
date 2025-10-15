@@ -12,9 +12,10 @@ interface ProductBatchModalProps {
   productBatch?: ProductBatch;
   onSave: (data: CreateProductBatchData | UpdateProductBatchData) => Promise<void>;
   isLoading?: boolean;
+  defaultProductId?: number; // ID produk yang akan di-default saat create mode
 }
 
-export default function ProductBatchModal({ isOpen, onClose, mode, productBatch, onSave, isLoading = false }: ProductBatchModalProps) {
+export default function ProductBatchModal({ isOpen, onClose, mode, productBatch, onSave, isLoading = false, defaultProductId }: ProductBatchModalProps) {
   const [formData, setFormData] = useState<CreateProductBatchData>({
     productId: 0,
     codeBatch: '',
@@ -54,7 +55,7 @@ export default function ProductBatchModal({ isOpen, onClose, mode, productBatch,
         });
       } else if (mode === 'create') {
         setFormData({
-          productId: 0,
+          productId: defaultProductId || 0, // Set default product ID jika ada
           codeBatch: '',
           unitPrice: 0,
           expDate: '',
@@ -63,7 +64,7 @@ export default function ProductBatchModal({ isOpen, onClose, mode, productBatch,
       }
       setErrors({});
     }
-  }, [isOpen, mode, productBatch, fetchProducts]);
+  }, [isOpen, mode, productBatch, defaultProductId, fetchProducts]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -225,7 +226,7 @@ export default function ProductBatchModal({ isOpen, onClose, mode, productBatch,
                     }
                   }}
                   placeholder="Select a product"
-                  disabled={isLoading || loadingProducts}
+                  disabled={isLoading || loadingProducts || (mode === 'create' && !!defaultProductId)} // Disable jika create mode dan ada defaultProductId
                   loading={loadingProducts}
                   error={errors.productId}
                 />
