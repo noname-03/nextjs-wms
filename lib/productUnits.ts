@@ -23,8 +23,8 @@ export interface CreateProductUnitData {
   productBatchId: number;
   name: string;
   quantity: number;
-  unitPrice: string;
-  unitPriceRetail: string;
+  unitPrice: number;
+  unitPriceRetail: number;
   barcode: string;
   description?: string;
 }
@@ -35,8 +35,8 @@ export interface UpdateProductUnitData {
   productBatchId?: number;
   name?: string;
   quantity?: number;
-  unitPrice?: string;
-  unitPriceRetail?: string;
+  unitPrice?: number;
+  unitPriceRetail?: number;
   barcode?: string;
   description?: string;
 }
@@ -201,6 +201,56 @@ export async function deleteProductUnit(id: number): Promise<ProductUnitResponse
     return data;
   } catch (error) {
     console.error('❌ Delete product unit error:', error);
+    return {
+      code: 500,
+      message: 'Network error or server unavailable',
+    };
+  }
+}
+
+// Get deleted product units
+export async function getDeletedProductUnits(): Promise<ProductUnitResponse> {
+  try {
+    console.log('🔍 Fetching deleted product units...');
+    
+    const response = await fetch(`${API_BASE_URL}/product-units/deleted`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    const data = await response.json();
+    
+    console.log('📥 Get deleted product units response status:', response.status);
+    console.log('📥 Get deleted product units response data:', data);
+
+    return data;
+  } catch (error) {
+    console.error('❌ Get deleted product units error:', error);
+    return {
+      code: 500,
+      message: 'Network error or server unavailable',
+    };
+  }
+}
+
+// Restore deleted product unit
+export async function restoreProductUnit(id: number): Promise<ProductUnitResponse> {
+  try {
+    console.log(`♻️ Restoring product unit ID: ${id}`);
+    
+    const response = await fetch(`${API_BASE_URL}/product-units/${id}/restore`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+    });
+
+    const data = await response.json();
+    
+    console.log('📥 Restore product unit response status:', response.status);
+    console.log('📥 Restore product unit response data:', data);
+
+    return data;
+  } catch (error) {
+    console.error('❌ Restore product unit error:', error);
     return {
       code: 500,
       message: 'Network error or server unavailable',
