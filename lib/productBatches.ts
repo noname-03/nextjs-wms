@@ -220,3 +220,28 @@ export async function restoreProductBatch(id: number): Promise<ProductBatchRespo
     throw error;
   }
 }
+
+// Get product batches by product ID
+export async function getProductBatchesByProduct(productId: number): Promise<ProductBatchResponse> {
+  try {
+    console.log(`🔍 Fetching product batches for product ID: ${productId}`);
+    
+    const response = await fetch(`${API_BASE_URL}/product-batches/product/${productId}`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+
+    const data = await response.json();
+    
+    console.log('📥 Get product batches by product response status:', response.status);
+    console.log('📥 Get product batches by product response data:', data);
+
+    return data;
+  } catch (error) {
+    console.error('❌ Get product batches by product error:', error);
+    return {
+      code: 500,
+      message: 'Network error or server unavailable',
+    };
+  }
+}
