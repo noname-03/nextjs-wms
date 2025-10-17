@@ -24,7 +24,7 @@ import {
 import { Reseller, getResellers } from '@/lib/resellers';
 
 type ModalMode = 'create' | 'edit' | 'view';
-type StatusType = 'all' | 'draft' | 'submitted' | 'approved' | 'rejected' | 'closed';
+type StatusType = 'all' | 'draft' | 'submitted' | 'approved' | 'received' | 'closed';
 
 interface FilterState {
   status: StatusType;
@@ -374,7 +374,7 @@ export default function PurchaseOrdersPage() {
       draft: 'bg-gray-100 text-gray-800',
       submitted: 'bg-blue-100 text-blue-800',
       approved: 'bg-green-100 text-green-800',
-      rejected: 'bg-red-100 text-red-800',
+      received: 'bg-teal-100 text-teal-800',
       closed: 'bg-purple-100 text-purple-800',
     };
 
@@ -402,13 +402,22 @@ export default function PurchaseOrdersPage() {
               itemName="Purchase Orders"
             />
             <button
+              onClick={() => router.push('/dashboard/purchase-orders/create')}
+              className="flex items-center gap-2 px-4 py-2 border border-indigo-600 rounded-lg text-sm font-medium text-indigo-600 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200"
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Create PO with Items
+            </button>
+            <button
               onClick={handleCreate}
               className="flex items-center gap-2 px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200"
             >
               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
-              Create PO
+              Quick Create PO
             </button>
           </div>
         </div>
@@ -416,7 +425,7 @@ export default function PurchaseOrdersPage() {
         {/* Status Tabs */}
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <div className="flex flex-wrap gap-2 p-4 border-b border-gray-200">
-            {(['all', 'draft', 'submitted', 'approved', 'rejected', 'closed'] as StatusType[]).map((status) => (
+            {(['all', 'draft', 'submitted', 'approved', 'received', 'closed'] as StatusType[]).map((status) => (
               <button
                 key={status}
                 onClick={() => handleStatusChange(status)}

@@ -10,7 +10,7 @@ export interface PurchaseOrder {
   userId: number;
   userName: string;
   orderDate: string;
-  status: 'draft' | 'submitted' | 'approved' | 'rejected' | 'closed';
+  status: 'draft' | 'submitted' | 'approved' | 'received' | 'closed';
   totalAmount: number;
   description?: string;
   createdAt: string;
@@ -48,16 +48,43 @@ export interface PurchaseOrderFilterParams {
   order_date_to?: string;
 }
 
+export interface PurchaseOrderItem {
+  productId: number;
+  qtyOrdered: number;
+  unitPrice: number;
+  discount: number;
+  totalPrice: number;
+  description?: string;
+}
+
+export interface CreatePurchaseOrderWithItemsData {
+  poNumber: string;
+  userId: number;
+  orderDate: string;
+  status: string;
+  totalAmount: number;
+  description?: string;
+  items: PurchaseOrderItem[];
+}
+
 // Helper function to convert camelCase to PascalCase for API
 function toPascalCase(obj: any): any {
-  const pascalObj: any = {};
-  for (const key in obj) {
-    if (obj.hasOwnProperty(key)) {
-      const pascalKey = key.charAt(0).toUpperCase() + key.slice(1);
-      pascalObj[pascalKey] = obj[key];
-    }
+  if (Array.isArray(obj)) {
+    return obj.map(item => toPascalCase(item));
   }
-  return pascalObj;
+  
+  if (obj !== null && typeof obj === 'object') {
+    const pascalObj: any = {};
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        const pascalKey = key.charAt(0).toUpperCase() + key.slice(1);
+        pascalObj[pascalKey] = toPascalCase(obj[key]);
+      }
+    }
+    return pascalObj;
+  }
+  
+  return obj;
 }
 
 // Get all purchase orders
@@ -271,6 +298,37 @@ export async function restorePurchaseOrder(id: number): Promise<PurchaseOrderRes
     return {
       code: 500,
       message: 'Error restoring purchase order',
+    };
+  }
+}
+
+// Create purchase order with items
+export async function createPurchaseOrderWithItems(data: CreatePurchaseOrderWithItemsData): Promise<PurchaseOrderResponse> {
+  try {
+    const token = getAuthToken();
+    
+    // Convert to PascalCase for API
+    const apiData = toPascalCase(data);
+    
+    console.log('Sending PO with items:', JSON.stringify(apiData, null, 2));
+    
+    const response = await fetch(`${API_BASE_URL}/purchase-orders/with-items`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(apiData),
+    });
+
+    const result = await response.json();
+    console.log('API Response:', result);
+    return result;
+  } catch (error) {
+    console.error('Error creating purchase order with items:', error);
+    return {
+      code: 500,
+      message: 'Error creating purchase order with items',
     };
   }
 }

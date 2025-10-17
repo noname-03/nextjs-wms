@@ -22,7 +22,7 @@ const statusOptions = [
   { value: 'draft', label: 'Draft' },
   { value: 'submitted', label: 'Submitted' },
   { value: 'approved', label: 'Approved' },
-  { value: 'rejected', label: 'Rejected' },
+  { value: 'received', label: 'Received' },
   { value: 'closed', label: 'Closed' },
 ];
 
