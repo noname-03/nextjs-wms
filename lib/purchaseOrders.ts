@@ -41,6 +41,13 @@ export interface PurchaseOrderResponse {
   data?: PurchaseOrder | PurchaseOrder[];
 }
 
+export interface PurchaseOrderFilterParams {
+  status?: string;
+  user_id?: number;
+  order_date_from?: string;
+  order_date_to?: string;
+}
+
 // Helper function to convert camelCase to PascalCase for API
 function toPascalCase(obj: any): any {
   const pascalObj: any = {};
@@ -71,6 +78,43 @@ export async function getPurchaseOrders(): Promise<PurchaseOrderResponse> {
     return {
       code: 500,
       message: 'Error fetching purchase orders',
+      data: [],
+    };
+  }
+}
+
+// Filter purchase orders with multiple parameters
+export async function filterPurchaseOrders(params: PurchaseOrderFilterParams): Promise<PurchaseOrderResponse> {
+  try {
+    const token = getAuthToken();
+    
+    // Build query string from params
+    const queryParams = new URLSearchParams();
+    
+    if (params.status) queryParams.append('status', params.status);
+    if (params.user_id) queryParams.append('user_id', params.user_id.toString());
+    if (params.order_date_from) queryParams.append('order_date_from', params.order_date_from);
+    if (params.order_date_to) queryParams.append('order_date_to', params.order_date_to);
+    
+    const queryString = queryParams.toString();
+    const url = `${API_BASE_URL}/purchase-orders/filter${queryString ? `?${queryString}` : ''}`;
+    
+    console.log('Filtering purchase orders with URL:', url);
+    
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error filtering purchase orders:', error);
+    return {
+      code: 500,
+      message: 'Error filtering purchase orders',
       data: [],
     };
   }
