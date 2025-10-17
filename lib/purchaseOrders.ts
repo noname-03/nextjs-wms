@@ -1,0 +1,232 @@
+import { getAuthToken } from './auth';
+
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api/v1';
+import { API_BASE_URL } from './config';
+
+// Types
+export interface PurchaseOrder {
+  id: number;
+  poNumber: string;
+  userId: number;
+  userName: string;
+  orderDate: string;
+  status: 'draft' | 'submitted' | 'approved' | 'rejected' | 'closed';
+  totalAmount: number;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreatePurchaseOrderData {
+  poNumber: string;
+  userId: number;
+  orderDate: string;
+  status: string;
+  totalAmount: number;
+  description?: string;
+}
+
+export interface UpdatePurchaseOrderData {
+  poNumber?: string;
+  userId?: number;
+  orderDate?: string;
+  status?: string;
+  totalAmount?: number;
+  description?: string;
+}
+
+export interface PurchaseOrderResponse {
+  code: number;
+  message: string;
+  data?: PurchaseOrder | PurchaseOrder[];
+}
+
+// Helper function to convert camelCase to PascalCase for API
+function toPascalCase(obj: any): any {
+  const pascalObj: any = {};
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      const pascalKey = key.charAt(0).toUpperCase() + key.slice(1);
+      pascalObj[pascalKey] = obj[key];
+    }
+  }
+  return pascalObj;
+}
+
+// Get all purchase orders
+export async function getPurchaseOrders(): Promise<PurchaseOrderResponse> {
+  try {
+    const token = getAuthToken();
+    const response = await fetch(`${API_BASE_URL}/purchase-orders`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching purchase orders:', error);
+    return {
+      code: 500,
+      message: 'Error fetching purchase orders',
+      data: [],
+    };
+  }
+}
+
+// Get deleted purchase orders
+export async function getDeletedPurchaseOrders(): Promise<PurchaseOrderResponse> {
+  try {
+    const token = getAuthToken();
+    const response = await fetch(`${API_BASE_URL}/purchase-orders/deleted`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching deleted purchase orders:', error);
+    return {
+      code: 500,
+      message: 'Error fetching deleted purchase orders',
+      data: [],
+    };
+  }
+}
+
+// Get purchase order by ID
+export async function getPurchaseOrderById(id: number): Promise<PurchaseOrderResponse> {
+  try {
+    const token = getAuthToken();
+    const response = await fetch(`${API_BASE_URL}/purchase-orders/${id}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching purchase order:', error);
+    return {
+      code: 500,
+      message: 'Error fetching purchase order',
+    };
+  }
+}
+
+// Create purchase order
+export async function createPurchaseOrder(data: CreatePurchaseOrderData): Promise<PurchaseOrderResponse> {
+  try {
+    const token = getAuthToken();
+    
+    // Convert to PascalCase for API
+    const apiData = toPascalCase(data);
+    
+    console.log('Creating purchase order with data:', apiData);
+    
+    const response = await fetch(`${API_BASE_URL}/purchase-orders`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(apiData),
+    });
+
+    const responseData = await response.json();
+    console.log('Create purchase order response:', responseData);
+    
+    return responseData;
+  } catch (error) {
+    console.error('Error creating purchase order:', error);
+    return {
+      code: 500,
+      message: 'Error creating purchase order',
+    };
+  }
+}
+
+// Update purchase order
+export async function updatePurchaseOrder(id: number, data: UpdatePurchaseOrderData): Promise<PurchaseOrderResponse> {
+  try {
+    const token = getAuthToken();
+    
+    // Convert to PascalCase for API
+    const apiData = toPascalCase(data);
+    
+    console.log('Updating purchase order with data:', apiData);
+    
+    const response = await fetch(`${API_BASE_URL}/purchase-orders/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(apiData),
+    });
+
+    const responseData = await response.json();
+    console.log('Update purchase order response:', responseData);
+    
+    return responseData;
+  } catch (error) {
+    console.error('Error updating purchase order:', error);
+    return {
+      code: 500,
+      message: 'Error updating purchase order',
+    };
+  }
+}
+
+// Delete purchase order
+export async function deletePurchaseOrder(id: number): Promise<PurchaseOrderResponse> {
+  try {
+    const token = getAuthToken();
+    const response = await fetch(`${API_BASE_URL}/purchase-orders/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error deleting purchase order:', error);
+    return {
+      code: 500,
+      message: 'Error deleting purchase order',
+    };
+  }
+}
+
+// Restore purchase order
+export async function restorePurchaseOrder(id: number): Promise<PurchaseOrderResponse> {
+  try {
+    const token = getAuthToken();
+    const response = await fetch(`${API_BASE_URL}/purchase-orders/${id}/restore`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error restoring purchase order:', error);
+    return {
+      code: 500,
+      message: 'Error restoring purchase order',
+    };
+  }
+}
