@@ -67,6 +67,20 @@ export interface CreatePurchaseOrderWithItemsData {
   items: PurchaseOrderItem[];
 }
 
+export interface UpdatePurchaseOrderWithItemsData {
+  poNumber: string;
+  userId: number;
+  orderDate: string;
+  status: string;
+  totalAmount: number;
+  description?: string;
+  items: PurchaseOrderItem[];
+}
+
+export interface PurchaseOrderWithItems extends PurchaseOrder {
+  items: PurchaseOrderItem[];
+}
+
 // Helper function to convert camelCase to PascalCase for API
 function toPascalCase(obj: any): any {
   if (Array.isArray(obj)) {
@@ -329,6 +343,65 @@ export async function createPurchaseOrderWithItems(data: CreatePurchaseOrderWith
     return {
       code: 500,
       message: 'Error creating purchase order with items',
+    };
+  }
+}
+
+// Get purchase order with items
+export async function getPurchaseOrderWithItems(id: number): Promise<PurchaseOrderWithItems> {
+  try {
+    const token = getAuthToken();
+    
+    const response = await fetch(`${API_BASE_URL}/purchase-orders/${id}/with-items`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch purchase order with items');
+    }
+
+    const result = await response.json();
+    return result.data;
+  } catch (error) {
+    console.error('Error fetching purchase order with items:', error);
+    throw error;
+  }
+}
+
+// Update purchase order with items
+export async function updatePurchaseOrderWithItems(
+  id: number,
+  data: UpdatePurchaseOrderWithItemsData
+): Promise<PurchaseOrderResponse> {
+  try {
+    const token = getAuthToken();
+    
+    // Convert to PascalCase for API
+    const apiData = toPascalCase(data);
+    
+    console.log('Updating PO with items:', JSON.stringify(apiData, null, 2));
+    
+    const response = await fetch(`${API_BASE_URL}/purchase-orders/${id}/with-items`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(apiData),
+    });
+
+    const result = await response.json();
+    console.log('API Response:', result);
+    return result;
+  } catch (error) {
+    console.error('Error updating purchase order with items:', error);
+    return {
+      code: 500,
+      message: 'Error updating purchase order with items',
     };
   }
 }
