@@ -531,7 +531,7 @@ export default function EditPurchaseOrderPage() {
             )}
 
             {/* Items Table - Desktop */}
-            <div className="hidden lg:block overflow-x-auto">
+            <div className="hidden lg:block overflow-x-auto min-h-[400px]">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
@@ -583,7 +583,8 @@ export default function EditPurchaseOrderPage() {
                             />
                             {showProductDropdown === item.id && (
                               <div
-                                className="absolute z-40 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"
+                                className="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-xl max-h-60 overflow-y-auto"
+                                style={{ minWidth: '250px' }}
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 {getFilteredProducts(item.id).map((product) => (
@@ -679,7 +680,7 @@ export default function EditPurchaseOrderPage() {
                 </div>
               ) : (
                 items.map((item, index) => (
-                  <div key={item.id} className="border border-gray-200 rounded-lg p-4 space-y-3">
+                  <div key={item.id} className="border border-gray-200 rounded-lg p-4 space-y-3 min-h-[350px]">
                     <div className="flex items-start justify-between">
                       <span className="text-sm font-medium text-gray-700">Item #{index + 1}</span>
                       <button
@@ -710,7 +711,7 @@ export default function EditPurchaseOrderPage() {
                       />
                       {showProductDropdown === item.id && (
                         <div
-                          className="absolute z-40 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"
+                          className="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-xl max-h-60 overflow-y-auto"
                           onClick={(e) => e.stopPropagation()}
                         >
                           {getFilteredProducts(item.id).map((product) => (
