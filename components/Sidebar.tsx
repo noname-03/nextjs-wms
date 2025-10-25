@@ -92,25 +92,28 @@ const inventorySubmenu = [
   }
 ];
 
-const otherMenuItems = [
+const ordersSubmenu = [
   {
     name: 'Purchase Orders',
     href: '/dashboard/purchase-orders',
     icon: (
-      <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
     ),
   },
   {
-    name: 'Orders',
-    href: '/dashboard/orders',
+    name: 'Delivery Orders',
+    href: '/dashboard/delivery-orders',
     icon: (
-      <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
     ),
-  },
+  }
+];
+
+const otherMenuItems = [
   {
     name: 'Suppliers',
     href: '/dashboard/suppliers',
@@ -145,6 +148,7 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse
   const pathname = usePathname();
   const [isBrandOpen, setIsBrandOpen] = useState(false);
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
+  const [isOrdersOpen, setIsOrdersOpen] = useState(false);
 
   const toggleBrandCard = () => {
     setIsBrandOpen(!isBrandOpen);
@@ -152,6 +156,10 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse
 
   const toggleInventoryCard = () => {
     setIsInventoryOpen(!isInventoryOpen);
+  };
+
+  const toggleOrdersCard = () => {
+    setIsOrdersOpen(!isOrdersOpen);
   };
 
   const isBrandActive = pathname.startsWith('/dashboard/brands') || 
@@ -162,6 +170,9 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse
                        pathname.startsWith('/dashboard/product-stocks');
 
   const isInventoryActive = pathname.startsWith('/dashboard/inventory');
+
+  const isOrdersActive = pathname.startsWith('/dashboard/purchase-orders') || 
+                        pathname.startsWith('/dashboard/delivery-orders');
 
   // Auto-open Brand Management section when on brand-related pages
   useEffect(() => {
@@ -176,6 +187,13 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse
       setIsInventoryOpen(true);
     }
   }, [isInventoryActive]);
+
+  // Auto-open Orders section when on orders pages
+  useEffect(() => {
+    if (isOrdersActive) {
+      setIsOrdersOpen(true);
+    }
+  }, [isOrdersActive]);
 
   return (
     <>
@@ -355,6 +373,65 @@ export default function Sidebar({ isOpen, onClose, isCollapsed, onToggleCollapse
                 <div className="ml-4 space-y-1 border-l-2 border-gray-200 pl-4">
                   {inventorySubmenu.map((item) => {
                     const isActive = pathname === item.href;
+                    return (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+                          isActive
+                            ? 'bg-indigo-50 text-indigo-700 border-r-2 border-indigo-700'
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        }`}
+                        onClick={() => onClose()}
+                      >
+                        <span className={`${isActive ? 'text-indigo-700' : 'text-gray-400'} mr-2`}>
+                          {item.icon}
+                        </span>
+                        {item.name}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Orders Management Card */}
+            <div className="space-y-1">
+              {/* Orders Header - Collapsible */}
+              <button
+                onClick={toggleOrdersCard}
+                className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                  isOrdersActive
+                    ? 'bg-indigo-100 text-indigo-700'
+                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                } ${isCollapsed ? 'lg:px-2 lg:justify-center' : ''}`}
+                title={isCollapsed ? 'Orders' : undefined}
+              >
+                <div className="flex items-center">
+                  <span className={`${isOrdersActive ? 'text-indigo-700' : 'text-gray-400'} ${isCollapsed ? '' : 'mr-3'}`}>
+                    <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </span>
+                  {!isCollapsed && <span>Orders</span>}
+                </div>
+                {!isCollapsed && (
+                  <svg 
+                    className={`h-4 w-4 transition-transform duration-200 ${isOrdersOpen ? 'rotate-180' : ''}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                )}
+              </button>
+
+              {/* Orders Submenu */}
+              {(isOrdersOpen || isCollapsed) && !isCollapsed && (
+                <div className="ml-4 space-y-1 border-l-2 border-gray-200 pl-4">
+                  {ordersSubmenu.map((item) => {
+                    const isActive = pathname.startsWith(item.href);
                     return (
                       <Link
                         key={item.name}
