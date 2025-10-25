@@ -49,7 +49,9 @@ export interface PurchaseOrderFilterParams {
 }
 
 export interface PurchaseOrderItem {
+  id?: number | string;
   productId: number;
+  productName?: string;
   qtyOrdered: number;
   unitPrice: number;
   discount: number;
