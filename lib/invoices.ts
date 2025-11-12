@@ -1,6 +1,7 @@
 import { getAuthToken } from './auth';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8080';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.g-synergy.com';
 
 export interface Invoice {
   id: number;
@@ -94,7 +95,7 @@ export interface UpdateInvoiceWithItemsRequest {
 // GET /api/v1/invoices
 export async function getInvoices(): Promise<Invoice[]> {
   const token = getAuthToken();
-  
+
   const response = await fetch(`${API_BASE_URL}/api/v1/invoices`, {
     method: 'GET',
     headers: {
@@ -114,7 +115,7 @@ export async function getInvoices(): Promise<Invoice[]> {
 // GET /api/v1/invoices/deleted
 export async function getDeletedInvoices(): Promise<Invoice[]> {
   const token = getAuthToken();
-  
+
   const response = await fetch(`${API_BASE_URL}/api/v1/invoices/deleted`, {
     method: 'GET',
     headers: {
@@ -134,7 +135,7 @@ export async function getDeletedInvoices(): Promise<Invoice[]> {
 // GET /api/v1/invoices/{id}
 export async function getInvoiceById(id: number): Promise<Invoice> {
   const token = getAuthToken();
-  
+
   const response = await fetch(`${API_BASE_URL}/api/v1/invoices/${id}`, {
     method: 'GET',
     headers: {
@@ -154,7 +155,7 @@ export async function getInvoiceById(id: number): Promise<Invoice> {
 // GET /api/v1/invoices/{id}/with-items
 export async function getInvoiceWithItems(id: number): Promise<InvoiceWithItems> {
   const token = getAuthToken();
-  
+
   const response = await fetch(`${API_BASE_URL}/api/v1/invoices/${id}/with-items`, {
     method: 'GET',
     headers: {
@@ -174,7 +175,7 @@ export async function getInvoiceWithItems(id: number): Promise<InvoiceWithItems>
 // POST /api/v1/invoices
 export async function createInvoice(invoice: CreateInvoiceRequest): Promise<Invoice> {
   const token = getAuthToken();
-  
+
   const response = await fetch(`${API_BASE_URL}/api/v1/invoices`, {
     method: 'POST',
     headers: {
@@ -196,7 +197,7 @@ export async function createInvoice(invoice: CreateInvoiceRequest): Promise<Invo
 // POST /api/v1/invoices/with-items
 export async function createInvoiceWithItems(invoice: CreateInvoiceWithItemsRequest): Promise<InvoiceWithItems> {
   const token = getAuthToken();
-  
+
   const response = await fetch(`${API_BASE_URL}/api/v1/invoices/with-items`, {
     method: 'POST',
     headers: {
@@ -218,7 +219,7 @@ export async function createInvoiceWithItems(invoice: CreateInvoiceWithItemsRequ
 // PUT /api/v1/invoices/{id}
 export async function updateInvoice(id: number, invoice: UpdateInvoiceRequest): Promise<Invoice> {
   const token = getAuthToken();
-  
+
   const response = await fetch(`${API_BASE_URL}/api/v1/invoices/${id}`, {
     method: 'PUT',
     headers: {
@@ -240,7 +241,7 @@ export async function updateInvoice(id: number, invoice: UpdateInvoiceRequest): 
 // PUT /api/v1/invoices/{id}/with-items
 export async function updateInvoiceWithItems(id: number, invoice: UpdateInvoiceWithItemsRequest): Promise<InvoiceWithItems> {
   const token = getAuthToken();
-  
+
   const response = await fetch(`${API_BASE_URL}/api/v1/invoices/${id}/with-items`, {
     method: 'PUT',
     headers: {
@@ -262,7 +263,7 @@ export async function updateInvoiceWithItems(id: number, invoice: UpdateInvoiceW
 // DELETE /api/v1/invoices/{id}
 export async function deleteInvoice(id: number): Promise<void> {
   const token = getAuthToken();
-  
+
   const response = await fetch(`${API_BASE_URL}/api/v1/invoices/${id}`, {
     method: 'DELETE',
     headers: {
@@ -279,7 +280,7 @@ export async function deleteInvoice(id: number): Promise<void> {
 // PUT /api/v1/invoices/{id}/restore
 export async function restoreInvoice(id: number): Promise<void> {
   const token = getAuthToken();
-  
+
   const response = await fetch(`${API_BASE_URL}/api/v1/invoices/${id}/restore`, {
     method: 'PUT',
     headers: {
@@ -309,12 +310,12 @@ export function filterInvoices(
     // Search filter
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
-      const matchesSearch = 
+      const matchesSearch =
         invoice.invoiceNumber.toLowerCase().includes(searchLower) ||
         invoice.poNumber.toLowerCase().includes(searchLower) ||
         (invoice.doNumber && invoice.doNumber.toLowerCase().includes(searchLower)) ||
         invoice.description?.toLowerCase().includes(searchLower);
-      
+
       if (!matchesSearch) return false;
     }
 
