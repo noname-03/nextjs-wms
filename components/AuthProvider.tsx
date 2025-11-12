@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { User, AuthContextType, LoginCredentials } from '@/types/auth';
 import { loginUser, setAuthToken, getAuthToken, removeAuthToken } from '@/lib/auth';
 import { decodeJWT } from '@/lib/jwt';
@@ -10,29 +10,60 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (mounted) {
-      // Check for existing token on mount
+    // Check for existing token on mount
+    const checkToken = () => {
       const token = getAuthToken();
+      console.log('🔐 AuthProvider - Checking token:', !!token);
+      
       if (token) {
+        console.log('🔑 Token found, validating...');
         // Validate and decode the JWT token
         const { user: decodedUser, isValid } = decodeJWT(token);
+        console.log('🔍 Token validation result:', { isValid, hasUser: !!decodedUser });
+        
         if (isValid && decodedUser) {
+          console.log('✅ Valid token, setting user:', decodedUser);
           setUser(decodedUser);
+          // Make sure cookie is also set (in case it was cleared)
+          setAuthToken(token);
         } else {
           // Token is invalid, remove it
+          console.log('❌ Invalid token, removing...');
           removeAuthToken();
+          setUser(null);
         }
+      } else {
+        console.log('❌ No token found');
+        setUser(null);
       }
       setIsLoading(false);
-    }
-  }, [mounted]);
+    };
+
+    checkToken();
+
+    // Listen for storage changes (e.g., token deleted in DevTools)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'auth_token') {
+        console.log('🔄 Storage changed for auth_token, re-checking...');
+        if (!e.newValue) {
+          console.log('🗑️ Token was removed from storage');
+          setUser(null);
+          removeAuthToken(); // Also remove cookie
+        } else {
+          console.log('🔑 Token was added/updated in storage');
+          checkToken();
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
     setIsLoading(true);
@@ -59,31 +90,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
+    console.log('🚪 Logging out...');
     setUser(null);
     removeAuthToken();
   };
-
-  // Don't render children until mounted to avoid hydration mismatch
-  if (!mounted) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="text-center">
-          <div className="mx-auto h-16 w-16 bg-indigo-600 rounded-full flex items-center justify-center mb-4 animate-pulse">
-            <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">WMS Admin</h2>
-          <div className="flex items-center justify-center space-x-2">
-            <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce"></div>
-            <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-            <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-          </div>
-          <p className="mt-2 text-gray-600">Initializing...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <AuthContext.Provider value={{ user, login, logout, isLoading }}>

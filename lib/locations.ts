@@ -1,5 +1,4 @@
-import { getAuthToken } from './auth';
-import { API_BASE_URL } from './config';
+import { fetchWithAuth } from './fetchWithAuth';
 
 export interface Location {
   id: number;
@@ -17,22 +16,15 @@ export interface LocationResponse {
 }
 
 // Get authorization headers
-function getAuthHeaders() {
-  const token = getAuthToken();
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
-  };
-}
 
 // Get all locations
 export async function getLocations(): Promise<LocationResponse> {
   try {
     console.log('🔍 Fetching locations...');
     
-    const response = await fetch(`${API_BASE_URL}/locations`, {
+    const response = await fetchWithAuth(`/locations`, {
       method: 'GET',
-      headers: getAuthHeaders(),
+      
     });
 
     const data = await response.json();

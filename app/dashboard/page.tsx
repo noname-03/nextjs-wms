@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import DashboardLayout from '@/components/DashboardLayout';
@@ -70,20 +70,23 @@ const lowStockItems = [
 export default function DashboardPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
 
+  // If no user after loading, force redirect to login
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (mounted && !isLoading && !user) {
-      console.log('🚫 Dashboard - No user, redirecting to login');
-      router.push('/login');
+    if (!isLoading && !user) {
+      console.log('🚫 Dashboard - No user detected, forcing redirect to login');
+      // Use window.location for hard redirect to trigger middleware
+      // Add small delay to show the redirect message
+      const timer = setTimeout(() => {
+        window.location.href = '/login';
+      }, 500);
+      
+      return () => clearTimeout(timer);
     }
-  }, [user, isLoading, router, mounted]);
+  }, [isLoading, user, router]);
 
-  if (!mounted || isLoading) {
+  // Show loading state while checking auth
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -104,8 +107,21 @@ export default function DashboardPage() {
     );
   }
 
+  // If no user after loading, show redirect message
   if (!user) {
-    return null; // Will redirect in useEffect
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="mx-auto h-16 w-16 bg-red-600 rounded-full flex items-center justify-center mb-4 animate-pulse">
+            <svg className="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <p className="text-gray-900 font-medium">Authentication required</p>
+          <p className="text-gray-600 text-sm mt-1">Redirecting to login...</p>
+        </div>
+      </div>
+    );
   }
 
   return (

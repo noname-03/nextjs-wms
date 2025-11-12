@@ -1,4 +1,4 @@
-import { getAuthToken } from './auth';
+import { fetchWithAuth } from './fetchWithAuth';
 
 export interface ProductBatch {
   id: number;
@@ -36,28 +36,17 @@ export interface ProductBatchResponse {
   data?: ProductBatch | ProductBatch[];
 }
 
-import { API_BASE_URL } from './config';
-
-// Get authorization headers
-function getAuthHeaders() {
-  const token = getAuthToken();
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
-  };
-}
-
 export async function getProductBatches(): Promise<ProductBatchResponse> {
   try {
     console.log('🔍 Fetching product batches...');
-    
-    const response = await fetch(`${API_BASE_URL}/product-batches`, {
+
+    const response = await fetchWithAuth(`/product-batches`, {
       method: 'GET',
-      headers: getAuthHeaders(),
+
     });
 
     const data = await response.json();
-    
+
     console.log('📥 Get product batches response status:', response.status);
     console.log('📥 Get product batches response data:', data);
 
@@ -75,9 +64,9 @@ export async function getProductBatchById(id: number): Promise<ProductBatch> {
   console.log(`Fetching product batch with ID: ${id}`);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/product-batches/${id}`, {
+    const response = await fetchWithAuth(`/product-batches/${id}`, {
       method: 'GET',
-      headers: getAuthHeaders(),
+
     });
 
     console.log('Product batch response status:', response.status);
@@ -90,7 +79,7 @@ export async function getProductBatchById(id: number): Promise<ProductBatch> {
 
     const data = await response.json();
     console.log('Product batch data received:', data);
-    
+
     return data.data;
   } catch (error) {
     console.error('Error fetching product batch:', error);
@@ -102,9 +91,9 @@ export async function createProductBatch(productBatchData: CreateProductBatchDat
   console.log('Creating product batch:', productBatchData);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/product-batches`, {
+    const response = await fetchWithAuth(`/product-batches`, {
       method: 'POST',
-      headers: getAuthHeaders(),
+
       body: JSON.stringify(productBatchData),
     });
 
@@ -118,7 +107,7 @@ export async function createProductBatch(productBatchData: CreateProductBatchDat
 
     const data = await response.json();
     console.log('Product batch created:', data);
-    
+
     return data.data;
   } catch (error) {
     console.error('Error creating product batch:', error);
@@ -130,9 +119,9 @@ export async function updateProductBatch(id: number, productBatchData: UpdatePro
   console.log(`Updating product batch ${id}:`, productBatchData);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/product-batches/${id}`, {
+    const response = await fetchWithAuth(`/product-batches/${id}`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
+
       body: JSON.stringify(productBatchData),
     });
 
@@ -146,7 +135,7 @@ export async function updateProductBatch(id: number, productBatchData: UpdatePro
 
     const data = await response.json();
     console.log('Product batch updated:', data);
-    
+
     return data.data;
   } catch (error) {
     console.error('Error updating product batch:', error);
@@ -158,9 +147,9 @@ export async function deleteProductBatch(id: number): Promise<void> {
   console.log(`Deleting product batch with ID: ${id}`);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/product-batches/${id}`, {
+    const response = await fetchWithAuth(`/product-batches/${id}`, {
       method: 'DELETE',
-      headers: getAuthHeaders(),
+
     });
 
     console.log('Delete product batch response status:', response.status);
@@ -182,14 +171,14 @@ export async function getDeletedProductBatches(): Promise<ProductBatchResponse> 
   console.log('Fetching deleted product batches...');
 
   try {
-    const response = await fetch(`${API_BASE_URL}/product-batches/deleted`, {
+    const response = await fetchWithAuth(`/product-batches/deleted`, {
       method: 'GET',
-      headers: getAuthHeaders(),
+
     });
 
-    
+
     const data = await response.json();
-    
+
     console.log('📥 Get deleted product-batches response status:', response.status);
     console.log('📥 Get deleted product-batches response data:', data);
 
@@ -204,9 +193,9 @@ export async function restoreProductBatch(id: number): Promise<ProductBatchRespo
   console.log(`Restoring product batch with ID: ${id}`);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/product-batches/${id}/restore`, {
+    const response = await fetchWithAuth(`/product-batches/${id}/restore`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
+
     });
 
     const data = await response.json();
@@ -225,14 +214,14 @@ export async function restoreProductBatch(id: number): Promise<ProductBatchRespo
 export async function getProductBatchesByProduct(productId: number): Promise<ProductBatchResponse> {
   try {
     console.log(`🔍 Fetching product batches for product ID: ${productId}`);
-    
-    const response = await fetch(`${API_BASE_URL}/product-batches/product/${productId}`, {
+
+    const response = await fetchWithAuth(`/product-batches/product/${productId}`, {
       method: 'GET',
-      headers: getAuthHeaders(),
+
     });
 
     const data = await response.json();
-    
+
     console.log('📥 Get product batches by product response status:', response.status);
     console.log('📥 Get product batches by product response data:', data);
 

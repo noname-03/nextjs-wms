@@ -12,21 +12,16 @@ export default function LoginPage() {
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [mounted, setMounted] = useState(false);
   
   const { login, user, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (mounted && !isLoading && user) {
+    if (!isLoading && user) {
       console.log('🔄 Login page - User already logged in, redirecting to dashboard');
-      router.push('/dashboard');
+      router.replace('/dashboard');
     }
-  }, [user, isLoading, router, mounted]);
+  }, [user, isLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,10 +34,12 @@ export default function LoginPage() {
       console.log('📝 Login result:', success);
       
       if (success) {
-        console.log('✅ Login successful, redirecting to dashboard...');
-        // Force a brief delay to ensure state is updated
+        console.log('✅ Login successful!');
+        // Small delay to ensure cookie is set before navigation
         setTimeout(() => {
-          router.push('/dashboard');
+          console.log('🔄 Redirecting to dashboard...');
+          // Use window.location for hard refresh to ensure middleware picks up cookie
+          window.location.href = '/dashboard';
         }, 100);
       } else {
         console.log('❌ Login failed');
@@ -64,7 +61,7 @@ export default function LoginPage() {
     }));
   };
 
-  if (!mounted || isLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4 sm:px-6 lg:px-8">
         <div className="text-center">
@@ -85,7 +82,13 @@ export default function LoginPage() {
   }
 
   if (user) {
-    return null; // Will redirect in useEffect
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+        <div className="text-center">
+          <p className="text-gray-600">Redirecting to dashboard...</p>
+        </div>
+      </div>
+    );
   }
 
   return (

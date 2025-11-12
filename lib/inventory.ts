@@ -1,5 +1,4 @@
-import { getAuthToken } from './auth';
-import { API_BASE_URL } from './config';
+import { fetchWithAuth } from './fetchWithAuth';
 
 export interface InventoryStock {
   id?: number;
@@ -38,13 +37,6 @@ export interface InventoryStockFilters {
 }
 
 // Get authorization headers
-function getAuthHeaders() {
-  const token = getAuthToken();
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
-  };
-}
 
 // Build query string from filters
 function buildQueryString(filters: InventoryStockFilters): string {
@@ -68,9 +60,9 @@ export async function getInventoryStock(filters: InventoryStockFilters = {}): Pr
     console.log('🔍 Fetching inventory stock with filters:', filters);
     console.log('🔍 Query string:', queryString);
     
-    const response = await fetch(`${API_BASE_URL}/inventory/stock${queryString}`, {
+    const response = await fetchWithAuth(`/inventory/stock${queryString}`, {
       method: 'GET',
-      headers: getAuthHeaders(),
+      
     });
 
     const data = await response.json();

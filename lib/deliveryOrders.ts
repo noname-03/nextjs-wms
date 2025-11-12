@@ -1,5 +1,4 @@
-import { getAuthToken } from './auth';
-import { API_BASE_URL } from './config';
+import { fetchWithAuth } from './fetchWithAuth';
 
 // Types
 export interface DeliveryOrder {
@@ -100,14 +99,10 @@ function toPascalCase(obj: any): any {
 // Get all delivery orders
 export async function getDeliveryOrders(): Promise<DeliveryOrderResponse> {
   try {
-    const token = getAuthToken();
-    
-    const response = await fetch(`${API_BASE_URL}/delivery-orders`, {
+
+
+    const response = await fetchWithAuth(`/delivery-orders`, {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
     });
 
     if (!response.ok) {
@@ -127,14 +122,10 @@ export async function getDeliveryOrders(): Promise<DeliveryOrderResponse> {
 // Get delivery order by ID
 export async function getDeliveryOrderById(id: number): Promise<DeliveryOrderResponse> {
   try {
-    const token = getAuthToken();
-    
-    const response = await fetch(`${API_BASE_URL}/delivery-orders/${id}`, {
+
+
+    const response = await fetchWithAuth(`/delivery-orders/${id}`, {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
     });
 
     if (!response.ok) {
@@ -154,14 +145,10 @@ export async function getDeliveryOrderById(id: number): Promise<DeliveryOrderRes
 // Get deleted delivery orders
 export async function getDeletedDeliveryOrders(): Promise<DeliveryOrderResponse> {
   try {
-    const token = getAuthToken();
-    
-    const response = await fetch(`${API_BASE_URL}/delivery-orders/deleted`, {
+
+
+    const response = await fetchWithAuth(`/delivery-orders/deleted`, {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
     });
 
     if (!response.ok) {
@@ -181,7 +168,7 @@ export async function getDeletedDeliveryOrders(): Promise<DeliveryOrderResponse>
 // Filter delivery orders
 export async function filterDeliveryOrders(params: DeliveryOrderFilterParams): Promise<DeliveryOrderResponse> {
   try {
-    const token = getAuthToken();
+
     const queryParams = new URLSearchParams();
 
     if (params.status) queryParams.append('status', params.status);
@@ -189,12 +176,8 @@ export async function filterDeliveryOrders(params: DeliveryOrderFilterParams): P
     if (params.delivery_date_from) queryParams.append('delivery_date_from', params.delivery_date_from);
     if (params.delivery_date_to) queryParams.append('delivery_date_to', params.delivery_date_to);
 
-    const response = await fetch(`${API_BASE_URL}/delivery-orders/filter?${queryParams.toString()}`, {
+    const response = await fetchWithAuth(`/delivery-orders/filter?${queryParams.toString()}`, {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
     });
 
     if (!response.ok) {
@@ -214,17 +197,13 @@ export async function filterDeliveryOrders(params: DeliveryOrderFilterParams): P
 // Create delivery order
 export async function createDeliveryOrder(data: CreateDeliveryOrderData): Promise<DeliveryOrderResponse> {
   try {
-    const token = getAuthToken();
-    
+
+
     // Convert to PascalCase for API
     const apiData = toPascalCase(data);
-    
-    const response = await fetch(`${API_BASE_URL}/delivery-orders`, {
+
+    const response = await fetchWithAuth(`/delivery-orders`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(apiData),
     });
 
@@ -241,17 +220,13 @@ export async function createDeliveryOrder(data: CreateDeliveryOrderData): Promis
 // Update delivery order
 export async function updateDeliveryOrder(id: number, data: UpdateDeliveryOrderData): Promise<DeliveryOrderResponse> {
   try {
-    const token = getAuthToken();
-    
+
+
     // Convert to PascalCase for API
     const apiData = toPascalCase(data);
-    
-    const response = await fetch(`${API_BASE_URL}/delivery-orders/${id}`, {
+
+    const response = await fetchWithAuth(`/delivery-orders/${id}`, {
       method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(apiData),
     });
 
@@ -268,14 +243,10 @@ export async function updateDeliveryOrder(id: number, data: UpdateDeliveryOrderD
 // Delete delivery order
 export async function deleteDeliveryOrder(id: number): Promise<DeliveryOrderResponse> {
   try {
-    const token = getAuthToken();
-    
-    const response = await fetch(`${API_BASE_URL}/delivery-orders/${id}`, {
+
+
+    const response = await fetchWithAuth(`/delivery-orders/${id}`, {
       method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
     });
 
     return await response.json();
@@ -291,14 +262,10 @@ export async function deleteDeliveryOrder(id: number): Promise<DeliveryOrderResp
 // Restore delivery order
 export async function restoreDeliveryOrder(id: number): Promise<DeliveryOrderResponse> {
   try {
-    const token = getAuthToken();
-    
-    const response = await fetch(`${API_BASE_URL}/delivery-orders/${id}/restore`, {
+
+
+    const response = await fetchWithAuth(`/delivery-orders/${id}/restore`, {
       method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
     });
 
     return await response.json();
@@ -314,19 +281,15 @@ export async function restoreDeliveryOrder(id: number): Promise<DeliveryOrderRes
 // Create delivery order with items
 export async function createDeliveryOrderWithItems(data: CreateDeliveryOrderWithItemsData): Promise<DeliveryOrderResponse> {
   try {
-    const token = getAuthToken();
-    
+
+
     // Convert to PascalCase for API
     const apiData = toPascalCase(data);
-    
+
     console.log('Creating DO with items:', JSON.stringify(apiData, null, 2));
-    
-    const response = await fetch(`${API_BASE_URL}/delivery-orders/with-items`, {
+
+    const response = await fetchWithAuth(`/delivery-orders/with-items`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(apiData),
     });
 
@@ -345,14 +308,10 @@ export async function createDeliveryOrderWithItems(data: CreateDeliveryOrderWith
 // Get delivery order with items
 export async function getDeliveryOrderWithItems(id: number): Promise<DeliveryOrderWithItems> {
   try {
-    const token = getAuthToken();
-    
-    const response = await fetch(`${API_BASE_URL}/delivery-orders/${id}/with-items`, {
+
+
+    const response = await fetchWithAuth(`/delivery-orders/${id}/with-items`, {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
     });
 
     if (!response.ok) {
@@ -373,19 +332,15 @@ export async function updateDeliveryOrderWithItems(
   data: UpdateDeliveryOrderWithItemsData
 ): Promise<DeliveryOrderResponse> {
   try {
-    const token = getAuthToken();
-    
+
+
     // Convert to PascalCase for API
     const apiData = toPascalCase(data);
-    
+
     console.log('Updating DO with items:', JSON.stringify(apiData, null, 2));
-    
-    const response = await fetch(`${API_BASE_URL}/delivery-orders/${id}/with-items`, {
+
+    const response = await fetchWithAuth(`/delivery-orders/${id}/with-items`, {
       method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(apiData),
     });
 

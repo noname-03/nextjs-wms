@@ -1,5 +1,4 @@
-import { getAuthToken } from './auth';
-import { API_BASE_URL } from './config';
+import { fetchWithAuth } from './fetchWithAuth';
 
 export interface ProductStock {
   id: number;
@@ -32,27 +31,18 @@ export interface ProductStockResponse {
   data?: ProductStock | ProductStock[];
 }
 
-// Get authorization headers
-function getAuthHeaders() {
-  const token = getAuthToken();
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
-  };
-}
-
 // Get all product stocks
 export async function getProductStocks(): Promise<ProductStockResponse> {
   try {
     console.log('🔍 Fetching product stocks...');
-    
-    const response = await fetch(`${API_BASE_URL}/product-stocks`, {
+
+    const response = await fetchWithAuth(`/product-stocks`, {
       method: 'GET',
-      headers: getAuthHeaders(),
+
     });
 
     const data = await response.json();
-    
+
     console.log('📥 Get product stocks response status:', response.status);
     console.log('📥 Get product stocks response data:', data);
 
@@ -70,14 +60,14 @@ export async function getProductStocks(): Promise<ProductStockResponse> {
 export async function getProductStockById(id: number): Promise<ProductStockResponse> {
   try {
     console.log(`🔍 Fetching product stock with ID: ${id}`);
-    
-    const response = await fetch(`${API_BASE_URL}/product-stocks/${id}`, {
+
+    const response = await fetchWithAuth(`/product-stocks/${id}`, {
       method: 'GET',
-      headers: getAuthHeaders(),
+
     });
 
     const data = await response.json();
-    
+
     console.log('📥 Get product stock response status:', response.status);
     console.log('📥 Get product stock response data:', data);
 
@@ -95,14 +85,14 @@ export async function getProductStockById(id: number): Promise<ProductStockRespo
 export async function getProductStocksByProduct(productId: number): Promise<ProductStockResponse> {
   try {
     console.log(`🔍 Fetching product stocks for product ID: ${productId}`);
-    
-    const response = await fetch(`${API_BASE_URL}/product-stocks/product/${productId}`, {
+
+    const response = await fetchWithAuth(`/product-stocks/product/${productId}`, {
       method: 'GET',
-      headers: getAuthHeaders(),
+
     });
 
     const data = await response.json();
-    
+
     console.log('📥 Get product stocks by product response status:', response.status);
     console.log('📥 Get product stocks by product response data:', data);
 
@@ -120,7 +110,7 @@ export async function getProductStocksByProduct(productId: number): Promise<Prod
 export async function createProductStock(productStockData: CreateProductStockData): Promise<ProductStockResponse> {
   try {
     console.log('📤 Creating product stock:', productStockData);
-    
+
     // Convert to API format (PascalCase)
     const requestBody = {
       ProductBatchID: productStockData.productBatchId,
@@ -129,14 +119,14 @@ export async function createProductStock(productStockData: CreateProductStockDat
       Quantity: productStockData.quantity,
     };
 
-    const response = await fetch(`${API_BASE_URL}/product-stocks`, {
+    const response = await fetchWithAuth(`/product-stocks`, {
       method: 'POST',
-      headers: getAuthHeaders(),
+
       body: JSON.stringify(requestBody),
     });
 
     const data = await response.json();
-    
+
     console.log('📥 Create product stock response status:', response.status);
     console.log('📥 Create product stock response data:', data);
 
@@ -154,7 +144,7 @@ export async function createProductStock(productStockData: CreateProductStockDat
 export async function updateProductStock(id: number, productStockData: UpdateProductStockData): Promise<ProductStockResponse> {
   try {
     console.log(`📤 Updating product stock ${id}:`, productStockData);
-    
+
     // Convert to API format (PascalCase)
     const requestBody: any = {};
     if (productStockData.productBatchId !== undefined) requestBody.ProductBatchID = productStockData.productBatchId;
@@ -162,14 +152,14 @@ export async function updateProductStock(id: number, productStockData: UpdatePro
     if (productStockData.locationId !== undefined) requestBody.LocationID = productStockData.locationId;
     if (productStockData.quantity !== undefined) requestBody.Quantity = productStockData.quantity;
 
-    const response = await fetch(`${API_BASE_URL}/product-stocks/${id}`, {
+    const response = await fetchWithAuth(`/product-stocks/${id}`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
+
       body: JSON.stringify(requestBody),
     });
 
     const data = await response.json();
-    
+
     console.log('📥 Update product stock response status:', response.status);
     console.log('📥 Update product stock response data:', data);
 
@@ -187,14 +177,14 @@ export async function updateProductStock(id: number, productStockData: UpdatePro
 export async function deleteProductStock(id: number): Promise<ProductStockResponse> {
   try {
     console.log(`🗑️ Deleting product stock with ID: ${id}`);
-    
-    const response = await fetch(`${API_BASE_URL}/product-stocks/${id}`, {
+
+    const response = await fetchWithAuth(`/product-stocks/${id}`, {
       method: 'DELETE',
-      headers: getAuthHeaders(),
+
     });
 
     const data = await response.json();
-    
+
     console.log('📥 Delete product stock response status:', response.status);
     console.log('📥 Delete product stock response data:', data);
 

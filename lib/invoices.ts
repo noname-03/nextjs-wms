@@ -1,7 +1,6 @@
-import { getAuthToken } from './auth';
+import { fetchWithAuth } from './fetchWithAuth';
 
 // const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8080';
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.g-synergy.com';
 
 export interface Invoice {
   id: number;
@@ -92,56 +91,54 @@ export interface UpdateInvoiceWithItemsRequest {
   }[];
 }
 
-// GET /api/v1/invoices
+// GET /invoices
 export async function getInvoices(): Promise<Invoice[]> {
-  const token = getAuthToken();
+  try {
+    const response = await fetchWithAuth(`/invoices`, {
+      method: 'GET',
+    });
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/invoices`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-  });
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('Failed to fetch invoices:', response.status, errorData);
+      throw new Error(`Failed to fetch invoices: ${response.status}`);
+    }
 
-  if (!response.ok) {
-    throw new Error('Failed to fetch invoices');
+    const data = await response.json();
+    return data.data;
+  } catch (error) {
+    console.error('Error in getInvoices:', error);
+    throw error;
   }
-
-  const data = await response.json();
-  return data.data;
 }
 
-// GET /api/v1/invoices/deleted
+// GET /invoices/deleted
 export async function getDeletedInvoices(): Promise<Invoice[]> {
-  const token = getAuthToken();
+  try {
+    const response = await fetchWithAuth(`/invoices/deleted`, {
+      method: 'GET',
+    });
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/invoices/deleted`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-  });
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('Failed to fetch deleted invoices:', response.status, errorData);
+      throw new Error(`Failed to fetch deleted invoices: ${response.status}`);
+    }
 
-  if (!response.ok) {
-    throw new Error('Failed to fetch deleted invoices');
+    const data = await response.json();
+    return data.data;
+  } catch (error) {
+    console.error('Error in getDeletedInvoices:', error);
+    throw error;
   }
-
-  const data = await response.json();
-  return data.data;
 }
 
-// GET /api/v1/invoices/{id}
+// GET /invoices/{id}
 export async function getInvoiceById(id: number): Promise<Invoice> {
-  const token = getAuthToken();
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/invoices/${id}`, {
+
+  const response = await fetchWithAuth(`/invoices/${id}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
   });
 
   if (!response.ok) {
@@ -152,16 +149,12 @@ export async function getInvoiceById(id: number): Promise<Invoice> {
   return data.data;
 }
 
-// GET /api/v1/invoices/{id}/with-items
+// GET /invoices/{id}/with-items
 export async function getInvoiceWithItems(id: number): Promise<InvoiceWithItems> {
-  const token = getAuthToken();
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/invoices/${id}/with-items`, {
+
+  const response = await fetchWithAuth(`/invoices/${id}/with-items`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
   });
 
   if (!response.ok) {
@@ -172,16 +165,12 @@ export async function getInvoiceWithItems(id: number): Promise<InvoiceWithItems>
   return data.data;
 }
 
-// POST /api/v1/invoices
+// POST /invoices
 export async function createInvoice(invoice: CreateInvoiceRequest): Promise<Invoice> {
-  const token = getAuthToken();
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/invoices`, {
+
+  const response = await fetchWithAuth(`/invoices`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
     body: JSON.stringify(invoice),
   });
 
@@ -194,16 +183,12 @@ export async function createInvoice(invoice: CreateInvoiceRequest): Promise<Invo
   return data.data;
 }
 
-// POST /api/v1/invoices/with-items
+// POST /invoices/with-items
 export async function createInvoiceWithItems(invoice: CreateInvoiceWithItemsRequest): Promise<InvoiceWithItems> {
-  const token = getAuthToken();
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/invoices/with-items`, {
+
+  const response = await fetchWithAuth(`/invoices/with-items`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
     body: JSON.stringify(invoice),
   });
 
@@ -216,16 +201,12 @@ export async function createInvoiceWithItems(invoice: CreateInvoiceWithItemsRequ
   return data.data;
 }
 
-// PUT /api/v1/invoices/{id}
+// PUT /invoices/{id}
 export async function updateInvoice(id: number, invoice: UpdateInvoiceRequest): Promise<Invoice> {
-  const token = getAuthToken();
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/invoices/${id}`, {
+
+  const response = await fetchWithAuth(`/invoices/${id}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
     body: JSON.stringify(invoice),
   });
 
@@ -238,16 +219,12 @@ export async function updateInvoice(id: number, invoice: UpdateInvoiceRequest): 
   return data.data;
 }
 
-// PUT /api/v1/invoices/{id}/with-items
+// PUT /invoices/{id}/with-items
 export async function updateInvoiceWithItems(id: number, invoice: UpdateInvoiceWithItemsRequest): Promise<InvoiceWithItems> {
-  const token = getAuthToken();
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/invoices/${id}/with-items`, {
+
+  const response = await fetchWithAuth(`/invoices/${id}/with-items`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
     body: JSON.stringify(invoice),
   });
 
@@ -260,16 +237,12 @@ export async function updateInvoiceWithItems(id: number, invoice: UpdateInvoiceW
   return data.data;
 }
 
-// DELETE /api/v1/invoices/{id}
+// DELETE /invoices/{id}
 export async function deleteInvoice(id: number): Promise<void> {
-  const token = getAuthToken();
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/invoices/${id}`, {
+
+  const response = await fetchWithAuth(`/invoices/${id}`, {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
   });
 
   if (!response.ok) {
@@ -277,16 +250,12 @@ export async function deleteInvoice(id: number): Promise<void> {
   }
 }
 
-// PUT /api/v1/invoices/{id}/restore
+// PUT /invoices/{id}/restore
 export async function restoreInvoice(id: number): Promise<void> {
-  const token = getAuthToken();
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/invoices/${id}/restore`, {
+
+  const response = await fetchWithAuth(`/invoices/${id}/restore`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
   });
 
   if (!response.ok) {

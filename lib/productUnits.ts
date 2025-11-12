@@ -1,5 +1,4 @@
-import { getAuthToken } from './auth';
-import { API_BASE_URL } from './config';
+import { fetchWithAuth } from './fetchWithAuth';
 
 export interface ProductUnit {
   id: number;
@@ -47,27 +46,18 @@ export interface ProductUnitResponse {
   data?: ProductUnit | ProductUnit[];
 }
 
-// Get authorization headers
-function getAuthHeaders() {
-  const token = getAuthToken();
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
-  };
-}
-
 // Get product units by product ID
 export async function getProductUnitsByProduct(productId: number): Promise<ProductUnitResponse> {
   try {
     console.log(`🔍 Fetching product units for product ID: ${productId}`);
-    
-    const response = await fetch(`${API_BASE_URL}/product-units/product/${productId}`, {
+
+    const response = await fetchWithAuth(`/product-units/product/${productId}`, {
       method: 'GET',
-      headers: getAuthHeaders(),
+
     });
 
     const data = await response.json();
-    
+
     console.log('📥 Get product units by product response status:', response.status);
     console.log('📥 Get product units by product response data:', data);
 
@@ -85,14 +75,14 @@ export async function getProductUnitsByProduct(productId: number): Promise<Produ
 export async function getProductUnits(): Promise<ProductUnitResponse> {
   try {
     console.log('🔍 Fetching all product units...');
-    
-    const response = await fetch(`${API_BASE_URL}/product-units`, {
+
+    const response = await fetchWithAuth(`/product-units`, {
       method: 'GET',
-      headers: getAuthHeaders(),
+
     });
 
     const data = await response.json();
-    
+
     console.log('📥 Get product units response status:', response.status);
     console.log('📥 Get product units response data:', data);
 
@@ -110,14 +100,14 @@ export async function getProductUnits(): Promise<ProductUnitResponse> {
 export async function getProductUnitById(id: number): Promise<ProductUnitResponse> {
   try {
     console.log(`🔍 Fetching product unit ID: ${id}`);
-    
-    const response = await fetch(`${API_BASE_URL}/product-units/${id}`, {
+
+    const response = await fetchWithAuth(`/product-units/${id}`, {
       method: 'GET',
-      headers: getAuthHeaders(),
+
     });
 
     const data = await response.json();
-    
+
     console.log('📥 Get product unit response status:', response.status);
     console.log('📥 Get product unit response data:', data);
 
@@ -135,15 +125,15 @@ export async function getProductUnitById(id: number): Promise<ProductUnitRespons
 export async function createProductUnit(productUnitData: CreateProductUnitData): Promise<ProductUnitResponse> {
   try {
     console.log('🆕 Creating product unit with data:', productUnitData);
-    
-    const response = await fetch(`${API_BASE_URL}/product-units`, {
+
+    const response = await fetchWithAuth(`/product-units`, {
       method: 'POST',
-      headers: getAuthHeaders(),
+
       body: JSON.stringify(productUnitData),
     });
 
     const data = await response.json();
-    
+
     console.log('📥 Create product unit response status:', response.status);
     console.log('📥 Create product unit response data:', data);
 
@@ -161,15 +151,15 @@ export async function createProductUnit(productUnitData: CreateProductUnitData):
 export async function updateProductUnit(id: number, productUnitData: UpdateProductUnitData): Promise<ProductUnitResponse> {
   try {
     console.log(`📝 Updating product unit ID: ${id} with data:`, productUnitData);
-    
-    const response = await fetch(`${API_BASE_URL}/product-units/${id}`, {
+
+    const response = await fetchWithAuth(`/product-units/${id}`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
+
       body: JSON.stringify(productUnitData),
     });
 
     const data = await response.json();
-    
+
     console.log('📥 Update product unit response status:', response.status);
     console.log('📥 Update product unit response data:', data);
 
@@ -187,14 +177,14 @@ export async function updateProductUnit(id: number, productUnitData: UpdateProdu
 export async function deleteProductUnit(id: number): Promise<ProductUnitResponse> {
   try {
     console.log(`🗑️ Deleting product unit ID: ${id}`);
-    
-    const response = await fetch(`${API_BASE_URL}/product-units/${id}`, {
+
+    const response = await fetchWithAuth(`/product-units/${id}`, {
       method: 'DELETE',
-      headers: getAuthHeaders(),
+
     });
 
     const data = await response.json();
-    
+
     console.log('📥 Delete product unit response status:', response.status);
     console.log('📥 Delete product unit response data:', data);
 
@@ -212,14 +202,14 @@ export async function deleteProductUnit(id: number): Promise<ProductUnitResponse
 export async function getDeletedProductUnits(): Promise<ProductUnitResponse> {
   try {
     console.log('🔍 Fetching deleted product units...');
-    
-    const response = await fetch(`${API_BASE_URL}/product-units/deleted`, {
+
+    const response = await fetchWithAuth(`/product-units/deleted`, {
       method: 'GET',
-      headers: getAuthHeaders(),
+
     });
 
     const data = await response.json();
-    
+
     console.log('📥 Get deleted product units response status:', response.status);
     console.log('📥 Get deleted product units response data:', data);
 
@@ -237,14 +227,14 @@ export async function getDeletedProductUnits(): Promise<ProductUnitResponse> {
 export async function restoreProductUnit(id: number): Promise<ProductUnitResponse> {
   try {
     console.log(`♻️ Restoring product unit ID: ${id}`);
-    
-    const response = await fetch(`${API_BASE_URL}/product-units/${id}/restore`, {
+
+    const response = await fetchWithAuth(`/product-units/${id}/restore`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
+
     });
 
     const data = await response.json();
-    
+
     console.log('📥 Restore product unit response status:', response.status);
     console.log('📥 Restore product unit response data:', data);
 

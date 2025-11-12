@@ -1,4 +1,4 @@
-import { API_BASE_URL } from './config';
+import { fetchWithAuth } from './fetchWithAuth';
 
 export interface Category {
   id: number;
@@ -27,26 +27,10 @@ export interface CategoryResponse {
   data: Category | Category[];
 }
 
-const getAuthToken = (): string | null => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('auth_token');
-  }
-  return null;
-};
-
-const getHeaders = () => {
-  const token = getAuthToken();
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': token ? `Bearer ${token}` : '',
-  };
-};
-
 export const getCategories = async (): Promise<CategoryResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/categories`, {
+    const response = await fetchWithAuth(`/categories`, {
       method: 'GET',
-      headers: getHeaders(),
     });
 
     if (!response.ok) {
@@ -63,9 +47,8 @@ export const getCategories = async (): Promise<CategoryResponse> => {
 
 export const getCategory = async (id: number): Promise<CategoryResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
+    const response = await fetchWithAuth(`/categories/${id}`, {
       method: 'GET',
-      headers: getHeaders(),
     });
 
     if (!response.ok) {
@@ -82,9 +65,8 @@ export const getCategory = async (id: number): Promise<CategoryResponse> => {
 
 export const createCategory = async (categoryData: CreateCategoryData): Promise<CategoryResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/categories`, {
+    const response = await fetchWithAuth(`/categories`, {
       method: 'POST',
-      headers: getHeaders(),
       body: JSON.stringify(categoryData),
     });
 
@@ -102,9 +84,8 @@ export const createCategory = async (categoryData: CreateCategoryData): Promise<
 
 export const updateCategory = async (id: number, categoryData: UpdateCategoryData): Promise<CategoryResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
+    const response = await fetchWithAuth(`/categories/${id}`, {
       method: 'PUT',
-      headers: getHeaders(),
       body: JSON.stringify(categoryData),
     });
 
@@ -122,9 +103,8 @@ export const updateCategory = async (id: number, categoryData: UpdateCategoryDat
 
 export const deleteCategory = async (id: number): Promise<CategoryResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
+    const response = await fetchWithAuth(`/categories/${id}`, {
       method: 'DELETE',
-      headers: getHeaders(),
     });
 
     if (!response.ok) {
@@ -142,9 +122,8 @@ export const deleteCategory = async (id: number): Promise<CategoryResponse> => {
 export const getDeletedCategories = async (): Promise<CategoryResponse> => {
   try {
     console.log('Fetching deleted categories...');
-    const response = await fetch(`${API_BASE_URL}/categories/deleted`, {
+    const response = await fetchWithAuth(`/categories/deleted`, {
       method: 'GET',
-      headers: getHeaders(),
     });
 
     if (!response.ok) {
@@ -163,9 +142,8 @@ export const getDeletedCategories = async (): Promise<CategoryResponse> => {
 export const restoreCategory = async (id: number): Promise<CategoryResponse> => {
   try {
     console.log('Restoring category with ID:', id);
-    const response = await fetch(`${API_BASE_URL}/categories/${id}/restore`, {
+    const response = await fetchWithAuth(`/categories/${id}/restore`, {
       method: 'PUT',
-      headers: getHeaders(),
     });
 
     if (!response.ok) {
@@ -184,9 +162,8 @@ export const restoreCategory = async (id: number): Promise<CategoryResponse> => 
 export const getCategoriesByBrandId = async (brandId: number): Promise<CategoryResponse> => {
   try {
     console.log('Fetching categories for brand ID:', brandId);
-    const response = await fetch(`${API_BASE_URL}/categories/brand/${brandId}`, {
+    const response = await fetchWithAuth(`/categories/brand/${brandId}`, {
       method: 'GET',
-      headers: getHeaders(),
     });
 
     if (!response.ok) {

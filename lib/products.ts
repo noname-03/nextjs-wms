@@ -1,4 +1,4 @@
-import { API_BASE_URL } from './config';
+import { fetchWithAuth } from './fetchWithAuth';
 
 export interface Product {
   id: number;
@@ -29,26 +29,10 @@ export interface ProductResponse {
   data: Product | Product[];
 }
 
-const getAuthToken = (): string | null => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('auth_token');
-  }
-  return null;
-};
-
-const getHeaders = () => {
-  const token = getAuthToken();
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': token ? `Bearer ${token}` : '',
-  };
-};
-
 export const getProducts = async (): Promise<ProductResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/products`, {
+    const response = await fetchWithAuth(`/products`, {
       method: 'GET',
-      headers: getHeaders(),
     });
 
     if (!response.ok) {
@@ -65,9 +49,9 @@ export const getProducts = async (): Promise<ProductResponse> => {
 
 export const getProduct = async (id: number): Promise<ProductResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+    const response = await fetchWithAuth(`/products/${id}`, {
       method: 'GET',
-      headers: getHeaders(),
+
     });
 
     if (!response.ok) {
@@ -84,9 +68,9 @@ export const getProduct = async (id: number): Promise<ProductResponse> => {
 
 export const createProduct = async (productData: CreateProductData): Promise<ProductResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/products`, {
+    const response = await fetchWithAuth(`/products`, {
       method: 'POST',
-      headers: getHeaders(),
+
       body: JSON.stringify(productData),
     });
 
@@ -104,9 +88,9 @@ export const createProduct = async (productData: CreateProductData): Promise<Pro
 
 export const updateProduct = async (id: number, productData: UpdateProductData): Promise<ProductResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+    const response = await fetchWithAuth(`/products/${id}`, {
       method: 'PUT',
-      headers: getHeaders(),
+
       body: JSON.stringify(productData),
     });
 
@@ -124,9 +108,9 @@ export const updateProduct = async (id: number, productData: UpdateProductData):
 
 export const deleteProduct = async (id: number): Promise<ProductResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+    const response = await fetchWithAuth(`/products/${id}`, {
       method: 'DELETE',
-      headers: getHeaders(),
+
     });
 
     if (!response.ok) {
@@ -144,9 +128,9 @@ export const deleteProduct = async (id: number): Promise<ProductResponse> => {
 export const getDeletedProducts = async (): Promise<ProductResponse> => {
   try {
     console.log('Fetching deleted products...');
-    const response = await fetch(`${API_BASE_URL}/products/deleted`, {
+    const response = await fetchWithAuth(`/products/deleted`, {
       method: 'GET',
-      headers: getHeaders(),
+
     });
 
     if (!response.ok) {
@@ -165,9 +149,9 @@ export const getDeletedProducts = async (): Promise<ProductResponse> => {
 export const restoreProduct = async (id: number): Promise<ProductResponse> => {
   try {
     console.log('Restoring product with ID:', id);
-    const response = await fetch(`${API_BASE_URL}/products/${id}/restore`, {
+    const response = await fetchWithAuth(`/products/${id}/restore`, {
       method: 'PUT',
-      headers: getHeaders(),
+
     });
 
     if (!response.ok) {
@@ -186,9 +170,9 @@ export const restoreProduct = async (id: number): Promise<ProductResponse> => {
 export const getProductsByCategoryId = async (categoryId: number): Promise<ProductResponse> => {
   try {
     console.log('Fetching products for category ID:', categoryId);
-    const response = await fetch(`${API_BASE_URL}/products/categories/${categoryId}`, {
+    const response = await fetchWithAuth(`/products/categories/${categoryId}`, {
       method: 'GET',
-      headers: getHeaders(),
+
     });
 
     if (!response.ok) {

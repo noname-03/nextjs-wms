@@ -1,5 +1,4 @@
-import { getAuthToken } from './auth';
-import { API_BASE_URL } from './config';
+import { fetchWithAuth } from './fetchWithAuth';
 
 export interface Reseller {
   userId: number;
@@ -12,14 +11,8 @@ export interface Reseller {
 
 // Get all resellers
 export async function getResellers(): Promise<Reseller[]> {
-  const token = getAuthToken();
-  
-  const response = await fetch(`${API_BASE_URL}/resellers`, {
+  const response = await fetchWithAuth(`/resellers`, {
     method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
   });
 
   if (!response.ok) {

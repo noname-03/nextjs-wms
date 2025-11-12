@@ -1,7 +1,4 @@
-import { getAuthToken } from './auth';
-
-// const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api/v1';
-import { API_BASE_URL } from './config';
+import { fetchWithAuth } from './fetchWithAuth';
 
 // Types
 export interface PurchaseOrder {
@@ -88,7 +85,7 @@ function toPascalCase(obj: any): any {
   if (Array.isArray(obj)) {
     return obj.map(item => toPascalCase(item));
   }
-  
+
   if (obj !== null && typeof obj === 'object') {
     const pascalObj: any = {};
     for (const key in obj) {
@@ -99,19 +96,15 @@ function toPascalCase(obj: any): any {
     }
     return pascalObj;
   }
-  
+
   return obj;
 }
 
 // Get all purchase orders
 export async function getPurchaseOrders(): Promise<PurchaseOrderResponse> {
   try {
-    const token = getAuthToken();
-    const response = await fetch(`${API_BASE_URL}/purchase-orders`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
+    const response = await fetchWithAuth(`/purchase-orders`, {
+      method: 'GET',
     });
 
     const data = await response.json();
@@ -129,26 +122,22 @@ export async function getPurchaseOrders(): Promise<PurchaseOrderResponse> {
 // Filter purchase orders with multiple parameters
 export async function filterPurchaseOrders(params: PurchaseOrderFilterParams): Promise<PurchaseOrderResponse> {
   try {
-    const token = getAuthToken();
-    
+
     // Build query string from params
     const queryParams = new URLSearchParams();
-    
+
     if (params.status) queryParams.append('status', params.status);
     if (params.user_id) queryParams.append('user_id', params.user_id.toString());
     if (params.order_date_from) queryParams.append('order_date_from', params.order_date_from);
     if (params.order_date_to) queryParams.append('order_date_to', params.order_date_to);
-    
+
     const queryString = queryParams.toString();
-    const url = `${API_BASE_URL}/purchase-orders/filter${queryString ? `?${queryString}` : ''}`;
-    
+    const url = `/purchase-orders/filter${queryString ? `?${queryString}` : ''}`;
+
     console.log('Filtering purchase orders with URL:', url);
-    
-    const response = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
+
+    const response = await fetchWithAuth(url, {
+      method: 'GET',
     });
 
     const data = await response.json();
@@ -166,12 +155,8 @@ export async function filterPurchaseOrders(params: PurchaseOrderFilterParams): P
 // Get deleted purchase orders
 export async function getDeletedPurchaseOrders(): Promise<PurchaseOrderResponse> {
   try {
-    const token = getAuthToken();
-    const response = await fetch(`${API_BASE_URL}/purchase-orders/deleted`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
+    const response = await fetchWithAuth(`/purchase-orders/deleted`, {
+      method: 'GET',
     });
 
     const data = await response.json();
@@ -189,12 +174,8 @@ export async function getDeletedPurchaseOrders(): Promise<PurchaseOrderResponse>
 // Get purchase order by ID
 export async function getPurchaseOrderById(id: number): Promise<PurchaseOrderResponse> {
   try {
-    const token = getAuthToken();
-    const response = await fetch(`${API_BASE_URL}/purchase-orders/${id}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
+    const response = await fetchWithAuth(`/purchase-orders/${id}`, {
+      method: 'GET',
     });
 
     const data = await response.json();
@@ -211,25 +192,20 @@ export async function getPurchaseOrderById(id: number): Promise<PurchaseOrderRes
 // Create purchase order
 export async function createPurchaseOrder(data: CreatePurchaseOrderData): Promise<PurchaseOrderResponse> {
   try {
-    const token = getAuthToken();
-    
+
     // Convert to PascalCase for API
     const apiData = toPascalCase(data);
-    
+
     console.log('Creating purchase order with data:', apiData);
-    
-    const response = await fetch(`${API_BASE_URL}/purchase-orders`, {
+
+    const response = await fetchWithAuth(`/purchase-orders`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(apiData),
     });
 
     const responseData = await response.json();
     console.log('Create purchase order response:', responseData);
-    
+
     return responseData;
   } catch (error) {
     console.error('Error creating purchase order:', error);
@@ -243,25 +219,20 @@ export async function createPurchaseOrder(data: CreatePurchaseOrderData): Promis
 // Update purchase order
 export async function updatePurchaseOrder(id: number, data: UpdatePurchaseOrderData): Promise<PurchaseOrderResponse> {
   try {
-    const token = getAuthToken();
-    
+
     // Convert to PascalCase for API
     const apiData = toPascalCase(data);
-    
+
     console.log('Updating purchase order with data:', apiData);
-    
-    const response = await fetch(`${API_BASE_URL}/purchase-orders/${id}`, {
+
+    const response = await fetchWithAuth(`/purchase-orders/${id}`, {
       method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(apiData),
     });
 
     const responseData = await response.json();
     console.log('Update purchase order response:', responseData);
-    
+
     return responseData;
   } catch (error) {
     console.error('Error updating purchase order:', error);
@@ -275,13 +246,8 @@ export async function updatePurchaseOrder(id: number, data: UpdatePurchaseOrderD
 // Delete purchase order
 export async function deletePurchaseOrder(id: number): Promise<PurchaseOrderResponse> {
   try {
-    const token = getAuthToken();
-    const response = await fetch(`${API_BASE_URL}/purchase-orders/${id}`, {
+    const response = await fetchWithAuth(`/purchase-orders/${id}`, {
       method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
     });
 
     const data = await response.json();
@@ -298,13 +264,8 @@ export async function deletePurchaseOrder(id: number): Promise<PurchaseOrderResp
 // Restore purchase order
 export async function restorePurchaseOrder(id: number): Promise<PurchaseOrderResponse> {
   try {
-    const token = getAuthToken();
-    const response = await fetch(`${API_BASE_URL}/purchase-orders/${id}/restore`, {
+    const response = await fetchWithAuth(`/purchase-orders/${id}/restore`, {
       method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
     });
 
     const data = await response.json();
@@ -321,19 +282,14 @@ export async function restorePurchaseOrder(id: number): Promise<PurchaseOrderRes
 // Create purchase order with items
 export async function createPurchaseOrderWithItems(data: CreatePurchaseOrderWithItemsData): Promise<PurchaseOrderResponse> {
   try {
-    const token = getAuthToken();
-    
+
     // Convert to PascalCase for API
     const apiData = toPascalCase(data);
-    
+
     console.log('Sending PO with items:', JSON.stringify(apiData, null, 2));
-    
-    const response = await fetch(`${API_BASE_URL}/purchase-orders/with-items`, {
+
+    const response = await fetchWithAuth(`/purchase-orders/with-items`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(apiData),
     });
 
@@ -352,14 +308,8 @@ export async function createPurchaseOrderWithItems(data: CreatePurchaseOrderWith
 // Get purchase order with items
 export async function getPurchaseOrderWithItems(id: number): Promise<PurchaseOrderWithItems> {
   try {
-    const token = getAuthToken();
-    
-    const response = await fetch(`${API_BASE_URL}/purchase-orders/${id}/with-items`, {
+    const response = await fetchWithAuth(`/purchase-orders/${id}/with-items`, {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
     });
 
     if (!response.ok) {
@@ -380,19 +330,14 @@ export async function updatePurchaseOrderWithItems(
   data: UpdatePurchaseOrderWithItemsData
 ): Promise<PurchaseOrderResponse> {
   try {
-    const token = getAuthToken();
-    
+
     // Convert to PascalCase for API
     const apiData = toPascalCase(data);
-    
+
     console.log('Updating PO with items:', JSON.stringify(apiData, null, 2));
-    
-    const response = await fetch(`${API_BASE_URL}/purchase-orders/${id}/with-items`, {
+
+    const response = await fetchWithAuth(`/purchase-orders/${id}/with-items`, {
       method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(apiData),
     });
 
